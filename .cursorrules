@@ -1,0 +1,71 @@
+/**
+ * Cursor Rules for Code Generation:
+ * 
+ * 1. **Strict TypeScript**: Always use strongly typed, organized TypeScript. Avoid `any` and implicit types. Define all types, interfaces, and enums explicitly, and keep them organized in `types.ts` or relevant files.
+ * 
+ * 2. **React & Next.js Best Practices**:
+ *    - Use functional components and React hooks (`useState`, `useEffect`, etc.).
+ *    - Follow Next.js App Router conventions (`app/` directory, server/client components as appropriate).
+ *    - Only use Client Components (`'use client'`) when absolutely necessary (e.g., for interactivity or browser APIs). Default to Server Components for static or data-fetching logic.
+ *    - Always check and respect the file and directory structure of the project. Place code in the correct location (`components/`, `lib/`, `types/`, `app/`, etc.).
+ *    - Prefer server actions over API routes for backend logic (put them in the /.actions folder i nthe root)
+ *    - Use async/await for asynchronous operations.
+ * 
+ * 3. **Component Structure & Organization**:
+ *    - Break UI into small, reusable, and strongly typed components.
+ *    - Use props interfaces for all components.
+ *    - Use `React.FC<Props>` or explicit function signatures.
+ *    - Ensure all UI components are accessible (ARIA labels, semantic HTML).
+ * 
+ * 4. **Styling**:
+ *    - Style all components using Shadcn UI and Tailwind CSS.
+ *    - Keep the design modern, elegant, and consistent.
+ *    - Do not use inline styles or deprecated styling methods.
+ * 
+ * 5. **Constants and Utilities**:
+ *    - Store constants (e.g., allowed consoles, media types) in `lib/constants.ts`.
+ *    - Place utility functions in `lib/` or `utils/` and type them explicitly.
+ * 
+ * 6. **Validation**:
+ *    - Validate all user input both client-side and server-side, using types to enforce constraints.
+ *    - Use Zod or similar schema validation libraries if needed.
+ * 
+ * 7. **Error Handling**:
+ *    - Handle errors gracefully with typed error objects and user-friendly messages.
+ * 
+ * 8. **File Handling**:
+ *    - Use the File API and FormData with explicit types.
+ *    - For backend, use the Next.js Request/Response types.
+ * 
+ * 9. **Documentation**:
+ *    - Add JSDoc comments to all functions, types, and components for clarity.
+ * 
+ * 10. **No Unused Code**:
+ *    - Do not generate unused variables, imports, or types.
+ * 
+ * 11. **No Implicit Any**:
+ *    - All variables, parameters, and return types must be explicitly typed.
+ * 
+ * 12. **Naming**:
+ *    - Use descriptive, consistent, and camelCase naming for variables, functions, and types.
+ * 
+ * 13. **Testing**:
+ *    - Where appropriate, include type-safe test data or examples.
+ * 
+ * 14. **No Magic Strings**:
+ *    - Use enums or constants for repeated string values.
+ * 
+ * 15. **No Inline Any**:
+ *    - Never use `as any` or type assertions unless absolutely necessary and justified with a comment.
+ * 
+ * 16. **File Structure**:
+ *    - Organize code into `components/`, `lib/`, `types/`, and `app/` directories as per Next.js conventions.
+ *    - Always check and respect the intended file and directory structure before generating code.
+ * 
+ * 17. **API Responses**:
+ *    - Always type API responses and errors.
+ * 
+ * 18. **No Deprecated APIs**:
+ *    - Use only current, recommended React and Next.js APIs.
+ */
+
