@@ -56,10 +56,10 @@ export interface Game {
   hasVideo: boolean;
   /** List of available media types */
   mediaTypes: string[];
-  
+
   // File Handles (using any for simplicity with File System API)
-  coverFileHandle?: any; 
-  logoFileHandle?: any; 
+  coverFileHandle?: any;
+  logoFileHandle?: any;
   screenshotFileHandle?: any;
   box3dFileHandle?: any;
   backCoverFileHandle?: any;
@@ -95,4 +95,4 @@ export interface ConsoleSelectorProps {
   onChange: (value: string) => void;
   /** Whether the control is disabled */
   disabled?: boolean;
-} 
+}

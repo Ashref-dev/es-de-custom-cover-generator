@@ -1,6 +1,7 @@
 /**
  * Cursor Rules for Code Generation:
  * 
+ * 0. always use bun to unstall dependencies and not npm, for example bun add package-name.
  * 1. **Strict TypeScript**: Always use strongly typed, organized TypeScript. Avoid `any` and implicit types. Define all types, interfaces, and enums explicitly, and keep them organized in `types.ts` or relevant files.
  * 
  * 2. **React & Next.js Best Practices**:

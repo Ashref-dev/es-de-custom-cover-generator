@@ -1,385 +1,405 @@
-'use client';;
-import { useState, useEffect } from 'react';
+'use client';
+import { useState, useEffect, useCallback } from 'react';
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetDescription,
-    SheetFooter,
-    SheetClose,
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+  SheetClose,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Game } from "@/types";
+import { Game, MediaType as MediaTypeConfig } from "@/types"; // Renamed MediaType to MediaTypeConfig to avoid conflict
 import { CONSOLES, MEDIA_TYPES } from "@/lib/constants";
 import Image from 'next/image';
-import { Separator } from '@/components/ui/separator';
-import { ImageOff, X, Info, Download, ExternalLink } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ImageOff, X, Save, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { TrashIcon } from '@radix-ui/react-icons';
+import FileUploadDropzone from '@/components/FileUploadDropzone'; // Assuming this is the correct path
+import { ScrollArea } from '@/components/ui/scroll-area'; // Corrected ScrollArea import
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface GameDetailsDrawerProps {
   game: Game | null;
   isOpen: boolean;
   onClose: () => void;
+  mainDirHandle: any; // Ideally FileSystemDirectoryHandle
+  onGameUpdate: (updatedGame: Game) => void;
 }
-
-// Media types to display with labels and corresponding handle names
-const displayableMedia = [
-  { label: 'Screenshot', handleName: 'screenshotFileHandle', aspectRatio: 'aspect-video', priority: 1 },
-  { label: 'Title Screen', handleName: 'titleScreenFileHandle', aspectRatio: 'aspect-video', priority: 2 },
-  { label: 'Cover Art', handleName: 'coverFileHandle', aspectRatio: 'aspect-[3/4]', priority: 3 },
-  { label: 'Logo/Marquee', handleName: 'logoFileHandle', aspectRatio: 'aspect-[3/1]', priority: 4 },
-  { label: '3D Box', handleName: 'box3dFileHandle', aspectRatio: 'aspect-square', priority: 5 },
-  { label: 'Back Cover', handleName: 'backCoverFileHandle', aspectRatio: 'aspect-[3/4]', priority: 6 },
-  { label: 'Fan Art', handleName: 'fanartFileHandle', aspectRatio: 'aspect-video', priority: 7 },
-  { label: 'Physical Media', handleName: 'physicalMediaFileHandle', aspectRatio: 'aspect-square', priority: 8 },
-];
-
-// Type for image loading state
-type ImageState = { url: string | null; loading: boolean };
 
 /**
  * Loads a file from a FileSystemFileHandle and returns an object URL
  */
 async function loadFileAsUrl(fileHandle: any): Promise<string> {
   if (!fileHandle || typeof fileHandle.getFile !== 'function') {
-    throw new Error('Invalid file handle provided');
+    // If it's already a File object (e.g. from a preview), create object URL directly
+    if (fileHandle instanceof File) {
+      return URL.createObjectURL(fileHandle);
+    }
+    console.warn('Invalid or missing file handle for loadFileAsUrl:', fileHandle);
+    return ''; // Return empty string or a placeholder to avoid breaking UI
   }
-  const file = await fileHandle.getFile();
-  return URL.createObjectURL(file);
+  try {
+    const file = await fileHandle.getFile();
+    return URL.createObjectURL(file);
+  } catch (error) {
+    console.error("Error loading file from handle:", error);
+    return ''; // Return empty string or a placeholder
+  }
 }
 
-/**
- * Renders a single media item (image) with loading state
- */
-function MediaItemDisplay({ 
-  label, 
-  game, 
-  handleName, 
-  aspectRatio, 
-  size = "normal"
-}: { 
-  label: string;
-  game: Game;
-  handleName: keyof Game;
-  aspectRatio: string;
-  size?: "large" | "normal" | "small";
-}) {
-  const [imageState, setImageState] = useState<ImageState>({ url: null, loading: false });
+// Helper to map mediaType.key to Game file handle properties
+// This needs to be comprehensive and match the Game type definition
+const mediaKeyToGameHandle: Record<string, keyof Game | undefined> = {
+  'covers': 'coverFileHandle',
+  'marquees': 'logoFileHandle',
+  // Note: Game type doesn't have videoFileHandle property
+  // Videos are detected via hasVideo flag, not through a file handle
+  'screenshots': 'screenshotFileHandle',
+  '3dboxes': 'box3dFileHandle',
+  'backcovers': 'backCoverFileHandle',
+  'fanart': 'fanartFileHandle',
+  'physicalmedia': 'physicalMediaFileHandle',
+  'titlescreens': 'titleScreenFileHandle',
+};
 
+export function GameDetailsDrawer({ game, isOpen, onClose, mainDirHandle, onGameUpdate }: GameDetailsDrawerProps) {
+  const [editableMediaFiles, setEditableMediaFiles] = useState<Record<string, File | null>>({});
+  const [currentMediaUrls, setCurrentMediaUrls] = useState<Record<string, string>>({});
+  const [isLoadingUrls, setIsLoadingUrls] = useState<boolean>(true);
+
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+
+  const consoleLabel = game ? CONSOLES.find(c => c.value === game.console)?.label || game.console : '';
+
+  // Effect to load current media URLs when game changes
   useEffect(() => {
-    let isMounted = true;
-    const handle = game[handleName];
-
-    const loadImage = async () => {
-      if (handle) {
-        if (isMounted) setImageState({ url: null, loading: true });
-        try {
-          const url = await loadFileAsUrl(handle);
-          if (isMounted) setImageState({ url: url, loading: false });
-        } catch (error) {
-          console.error(`Error loading ${label}:`, error);
-          if (isMounted) setImageState({ url: null, loading: false });
+    if (game && isOpen) {
+      const loadUrls = async () => {
+        setIsLoadingUrls(true);
+        const urls: Record<string, string> = {};
+        for (const mediaType of MEDIA_TYPES) {
+          if (mediaType.key === 'videos') {
+            if (game.hasVideo && mainDirHandle) {
+              try {
+                const consoleDirHandle = await mainDirHandle.getDirectoryHandle(game.console);
+                const videosDirHandle = await consoleDirHandle.getDirectoryHandle(mediaType.folder);
+                const videoFileHandle = await videosDirHandle.getFileHandle(game.name + mediaType.extension);
+                urls[mediaType.key] = await loadFileAsUrl(videoFileHandle);
+              } catch (error) {
+                console.error(`Error loading URL for video '${game.name}${mediaType.extension}':`, error);
+                urls[mediaType.key] = ''; // Fallback if video file can't be loaded
+              }
+            } else {
+              urls[mediaType.key] = ''; // No video or no mainDirHandle
+            }
+            continue;
+          }
+          
+          // For other media types, use the file handle approach
+          const handleName = mediaKeyToGameHandle[mediaType.key];
+          if (handleName) {
+            const fileHandle = game[handleName];
+            if (fileHandle) {
+              try {
+                urls[mediaType.key] = await loadFileAsUrl(fileHandle);
+              } catch (error) {
+                console.error(`Error loading URL for ${mediaType.label}:`, error);
+                urls[mediaType.key] = ''; // Placeholder or error image URL
+              }
+            } else {
+               urls[mediaType.key] = ''; // No handle
+            }
+          }
         }
+        setCurrentMediaUrls(urls);
+        setIsLoadingUrls(false);
+      };
+      loadUrls();
+      setEditableMediaFiles({}); // Reset editable files when game changes
+      setSaveError(null);
+      setSaveSuccess(null);
+    } else if (!isOpen) {
+        // Clean up object URLs when drawer is closed
+        Object.values(currentMediaUrls).forEach(url => {
+            if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
+        });
+        setCurrentMediaUrls({});
+    }
+
+    return () => {
+      // Cleanup on unmount or when game/isOpen changes leading to closure
+      Object.values(currentMediaUrls).forEach(url => {
+        if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
+      });
+    };
+  }, [game, isOpen, mainDirHandle]);
+
+
+  const handleMediaFileChange = useCallback((mediaKey: string, file: File | null) => {
+    setEditableMediaFiles(prev => ({ ...prev, [mediaKey]: file }));
+    setSaveError(null);
+    setSaveSuccess(null);
+  }, []);
+
+  const handleSaveChanges = async () => {
+    if (!game || !mainDirHandle) {
+      setSaveError("Game data or directory handle is missing.");
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+    let changesMade = 0;
+    const updatedGameData = { ...game }; // Shallow copy
+
+    try {
+      const consoleDirHandle = await mainDirHandle.getDirectoryHandle(game.console, { create: true });
+
+      for (const mediaType of MEDIA_TYPES) {
+        const newFile = editableMediaFiles[mediaType.key];
+        if (newFile) {
+          changesMade++;
+          
+          // Special handling for videos
+          if (mediaType.key === 'videos') {
+            const mediaFolderHandle = await consoleDirHandle.getDirectoryHandle(mediaType.folder, { create: true });
+            const fileName = game.name + mediaType.extension;
+            
+            const fileHandle = await mediaFolderHandle.getFileHandle(fileName, { create: true });
+            const writable = await fileHandle.createWritable();
+            await writable.write(newFile);
+            await writable.close();
+            
+            // Update hasVideo flag directly
+            updatedGameData.hasVideo = true;
+            
+            // Add media type to the list if not present
+            if (!updatedGameData.mediaTypes.includes(mediaType.folder)) {
+              updatedGameData.mediaTypes.push(mediaType.folder);
+            }
+            continue;
+          }
+          
+          // Handle other media types as before
+          const mediaFolderHandle = await consoleDirHandle.getDirectoryHandle(mediaType.folder, { create: true });
+          const fileName = game.name + mediaType.extension;
+          
+          const fileHandle = await mediaFolderHandle.getFileHandle(fileName, { create: true });
+          const writable = await fileHandle.createWritable();
+          await writable.write(newFile);
+          await writable.close();
+
+          // Update game object's handle and boolean flag
+          const gameHandleKey = mediaKeyToGameHandle[mediaType.key];
+          if (gameHandleKey) {
+            (updatedGameData as any)[gameHandleKey] = fileHandle;
+          }
+          
+          // Update specific boolean flags
+          if (mediaType.key === 'covers') updatedGameData.hasCover = true;
+          if (mediaType.key === 'marquees') updatedGameData.hasLogo = true;
+          
+          // Update mediaTypes array if this type wasn't there
+          if (!updatedGameData.mediaTypes.includes(mediaType.folder)) {
+            updatedGameData.mediaTypes.push(mediaType.folder);
+          }
+        }
+      }
+
+      if (changesMade > 0) {
+        onGameUpdate(updatedGameData);
+        setSaveSuccess(`${changesMade} media file(s) updated successfully!`);
+         // Refresh current media URLs for the updated files
+        const urls: Record<string, string> = { ...currentMediaUrls };
+        for (const mediaType of MEDIA_TYPES) {
+            if (editableMediaFiles[mediaType.key]) { // If this file was just updated
+                const handleName = mediaKeyToGameHandle[mediaType.key];
+                if (handleName) {
+                    const fileHandle = updatedGameData[handleName];
+                    if (fileHandle) {
+                        if (urls[mediaType.key] && urls[mediaType.key].startsWith('blob:')) {
+                            URL.revokeObjectURL(urls[mediaType.key]);
+                        }
+                        urls[mediaType.key] = await loadFileAsUrl(fileHandle);
+                    }
+                }
+            }
+        }
+        setCurrentMediaUrls(urls);
+        setEditableMediaFiles({}); // Clear staging files
+
       } else {
-        if (isMounted) setImageState({ url: null, loading: false }); // No handle, not loading
+        setSaveSuccess("No changes to save.");
       }
-    };
-
-    loadImage();
-
-    return () => {
-      isMounted = false;
-      if (imageState.url) {
-        URL.revokeObjectURL(imageState.url);
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game, handleName, label]);
-
-  // Size-based classes
-  const containerClasses = {
-    large: "col-span-full mb-8",
-    normal: "",
-    small: ""
+    } catch (err) {
+      console.error("Error saving media files:", err);
+      setSaveError(err instanceof Error ? err.message : "An unknown error occurred during save.");
+    } finally {
+      setIsSaving(false);
+    }
   };
-
-  const innerClasses = {
-    large: "relative aspect-video w-full max-w-5xl mx-auto overflow-hidden rounded-xl",
-    normal: `relative w-full bg-muted rounded-lg overflow-hidden flex items-center justify-center ${aspectRatio}`,
-    small: `relative w-full bg-muted rounded-md overflow-hidden flex items-center justify-center ${aspectRatio}`
-  };
-
-  const titleClasses = {
-    large: "font-bold text-xl mb-3 text-center",
-    normal: "font-semibold mb-2 text-sm md:text-base",
-    small: "font-medium mb-1 text-xs"
-  };
-
-  return (
-    <div className={`flex flex-col items-center ${containerClasses[size]}`}>
-      {label && <h4 className={titleClasses[size]}>{label}</h4>}
-      
-      <div className={innerClasses[size]}>
-        {imageState.loading ? (
-          <div className="animate-pulse bg-muted-foreground/20 w-full h-full"></div>
-        ) : imageState.url ? (
-          <div className="relative w-full h-full">
-            <Image
-              src={imageState.url}
-              alt={`${label} for ${game.name}`}
-              layout="fill"
-              objectFit="contain"
-              className={`${size === "large" ? "hover:scale-[1.02]" : "p-1"} transition-transform duration-300`}
-              priority={size === "large"}
-            />
-          </div>
-        ) : (
-          <div className="text-center p-2 h-full flex flex-col items-center justify-center">
-            <ImageOff className={`mx-auto ${size === "large" ? "h-16 w-16" : "h-8 w-8 md:h-12 md:w-12"} text-muted-foreground/50`} />
-            <p className="text-muted-foreground/70 text-xs md:text-sm mt-1">Not available</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-export function GameDetailsDrawer({ game, isOpen, onClose }: GameDetailsDrawerProps) {
-  const [activeTab, setActiveTab] = useState<string>("gallery");
   
-  useEffect(() => {
-    // Add/remove class to body to prevent scrolling when drawer is open
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    
-    // Reset to gallery tab when opening a new game
-    if (isOpen) {
-      setActiveTab("gallery");
-    }
-    
-    return () => {
-      document.body.style.overflow = ''; // Cleanup on unmount
-    };
-  }, [isOpen]);
-
   if (!game) {
     return null;
   }
 
-  const consoleLabel = CONSOLES.find(c => c.value === game.console)?.label || game.console;
-  
-  // Sort displayable media by priority and availability
-  const sortedMedia = [...displayableMedia].sort((a, b) => {
-    // If one has a file handle and the other doesn't, prioritize the one with handle
-    const aHasHandle = !!game[a.handleName as keyof Game];
-    const bHasHandle = !!game[b.handleName as keyof Game];
-    
-    if (aHasHandle && !bHasHandle) return -1;
-    if (!aHasHandle && bHasHandle) return 1;
-    
-    // If both have or both don't have handles, sort by priority
-    return a.priority - b.priority;
-  });
-
-  // Primary image is the first item with a handle, defaulting to the first item
-  const primaryMedia = sortedMedia.find(item => !!game[item.handleName as keyof Game]) || sortedMedia[0];
-  
-  // Rest of the media items (excluding primary)
-  const secondaryMedia = sortedMedia.filter(item => 
-    item.handleName !== primaryMedia.handleName && !!game[item.handleName as keyof Game]
-  );
-  
-  // Count available media types
-  const availableMediaCount = game.mediaTypes.length;
-
-  // Gallery tab content
-  const GalleryContent = (
-    <>
-      {/* Primary Image (Screenshot or Cover) */}
-      <MediaItemDisplay
-        label={primaryMedia.label}
-        game={game}
-        handleName={primaryMedia.handleName as keyof Game}
-        aspectRatio={primaryMedia.aspectRatio}
-        size="large"
-      />
-      
-      {secondaryMedia.length > 0 && <Separator className="my-8" />}
-      
-      {/* Grid for other media types with nice shadows and effects */}
-      {secondaryMedia.length > 0 && (
-        <div>
-          <h3 className="text-xl font-semibold mb-6 text-center">Additional Media</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            {secondaryMedia.map(item => (
-              <div key={item.handleName} className="transition-all duration-300 hover:scale-[1.03]">
-                <MediaItemDisplay
-                  label={item.label}
-                  game={game}
-                  handleName={item.handleName as keyof Game}
-                  aspectRatio={item.aspectRatio}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      
-      {/* If no secondary media is available */}
-      {secondaryMedia.length === 0 && (
-        <div className="text-center my-8 p-8 bg-muted/30 rounded-lg max-w-xl mx-auto">
-          <Info className="mx-auto h-10 w-10 text-muted-foreground/50 mb-4" />
-          <h3 className="text-lg font-medium mb-2">No Additional Media</h3>
-          <p className="text-muted-foreground text-sm">
-            There are no additional media files available for this game. 
-            You may add more media types in the ES-DE media folder.
-          </p>
-        </div>
-      )}
-    </>
-  );
-
-  // Info tab content
-  const InfoContent = (
-    <div className="max-w-3xl mx-auto">
-      <div className="bg-muted/30 p-6 rounded-xl mb-8">
-        <h3 className="text-xl font-semibold mb-4">Game Details</h3>
-        <dl className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div className="flex flex-col space-y-1">
-            <dt className="text-muted-foreground">Game Name</dt>
-            <dd className="font-medium">{game.name}</dd>
-          </div>
-          <div className="flex flex-col space-y-1">
-            <dt className="text-muted-foreground">Console</dt>
-            <dd className="font-medium">{consoleLabel}</dd>
-          </div>
-          <div className="flex flex-col space-y-1">
-            <dt className="text-muted-foreground">Media Types</dt>
-            <dd className="font-medium">{availableMediaCount} types available</dd>
-          </div>
-          <div className="flex flex-col space-y-1">
-            <dt className="text-muted-foreground">Video</dt>
-            <dd className="font-medium">{game.hasVideo ? "Available" : "Not available"}</dd>
-          </div>
-        </dl>
-      </div>
-      
-      {/* Media files status grid */}
-      <h3 className="text-xl font-semibold mb-4">Media Files Status</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {MEDIA_TYPES.map(mt => {
-          const isAvailable = game.mediaTypes.includes(mt.folder);
-          return (
-            <div 
-              key={mt.key} 
-              className={`
-                flex items-center justify-between p-4 rounded-lg 
-                ${isAvailable 
-                  ? 'bg-primary/5 border border-primary/20' 
-                  : 'bg-muted/50 border border-muted-foreground/10'
-                }
-              `}
-            >
-              <span className="font-medium">{mt.label}</span>
-              <Badge 
-                variant={isAvailable ? "default" : "outline"} 
-                className={`
-                  text-xs 
-                  ${isAvailable 
-                    ? 'bg-primary/90 hover:bg-primary/80 text-primary-foreground' 
-                    : 'text-muted-foreground'
-                  }
-                `}
-              >
-                {isAvailable ? 'Found' : 'Missing'}
-              </Badge>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="bottom" className="h-screen w-screen p-0 flex flex-col max-h-screen">
-        <SheetHeader className="p-4 bg-background border-b shadow-sm sticky top-0 z-10 flex-shrink-0">
-          <div className="flex justify-between items-center">
+    <Sheet open={isOpen} onOpenChange={(open) => {
+      if (!open) {
+        onClose();
+        // Clean up object URLs when drawer is closed
+        Object.values(currentMediaUrls).forEach(url => {
+            if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
+        });
+        Object.values(editableMediaFiles).forEach(file => {
+            if (file) { 
+                // If we created URLs for editableMediaFiles previews directly, clean them here.
+            }
+        });
+        setCurrentMediaUrls({});
+        setEditableMediaFiles({});
+      }
+    }}>
+      <SheetContent 
+        side="bottom" 
+        className="h-screen w-screen p-0 flex flex-col border-none max-h-screen overflow-hidden"
+      >
+        <SheetHeader className="p-6 bg-background border-b border-border/40 shadow-sm sticky top-0 z-10 flex-shrink-0">
+          <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
             <div className="flex-1">
-              <div className="flex items-center gap-3">
-                <div>
-                  <SheetTitle className="text-2xl font-bold">{game.name}</SheetTitle>
-                  <SheetDescription className="text-lg text-muted-foreground">
-                    {consoleLabel}
-                  </SheetDescription>
-                </div>
-                
-                <Badge className="ml-auto" variant="outline">
-                  {availableMediaCount} Media Types
-                </Badge>
-              </div>
+                <SheetTitle className="text-3xl font-bold tracking-tight">{game.name}</SheetTitle>
+                <SheetDescription className="text-lg text-muted-foreground mt-1">
+                  {consoleLabel} — Media Management
+                </SheetDescription>
             </div>
-            
             <SheetClose asChild>
-              <Button variant="ghost" size="icon" className="rounded-full ml-4 flex-shrink-0">
-                <X className="h-5 w-5" />
-              </Button>
+                <Button variant="ghost" size="icon" className="rounded-full ml-4 flex-shrink-0 hover:bg-muted/80 transition-colors">
+                  <X className="h-5 w-5" />
+                </Button>
             </SheetClose>
           </div>
         </SheetHeader>
 
-        {/* Tabs with proper height and overflow handling */}
-        <div className="flex flex-col flex-grow min-h-0 overflow-hidden">
-          <div className="px-4 pt-4 pb-2 bg-background border-b flex-shrink-0">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full">
-                <TabsTrigger value="gallery" className="flex-1 py-2.5">
-                  Gallery
-                </TabsTrigger>
-                <TabsTrigger value="info" className="flex-1 py-2.5">
-                  Media Info
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-          
-          <div className="flex-grow min-h-0 relative">
-            {activeTab === "gallery" ? (
-              <div className="absolute inset-0 overflow-auto">
-                <div className="p-4 md:p-6">
-                  {GalleryContent}
-                </div>
-              </div>
-            ) : (
-              <div className="absolute inset-0 overflow-auto">
-                <div className="p-4 md:p-6">
-                  {InfoContent}
-                </div>
-              </div>
+        <ScrollArea className="flex-grow min-h-0 overflow-auto">
+          <div className="max-w-7xl mx-auto p-6 space-y-8">
+            {saveError && (
+              <Alert variant="destructive" className="animate-in fade-in-50">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Save Error</AlertTitle>
+                <AlertDescription>{saveError}</AlertDescription>
+              </Alert>
             )}
-          </div>
-        </div>
+            {saveSuccess && (
+              <Alert variant="default" className="border-green-500 bg-green-50 text-green-700 animate-in fade-in-50">
+                <CheckCircle2 className="h-4 w-4" />
+                <AlertTitle>Success</AlertTitle>
+                <AlertDescription>{saveSuccess}</AlertDescription>
+              </Alert>
+            )}
 
-        {/* Footer remains at bottom */}
-        <SheetFooter className="p-4 border-t sticky bottom-0 bg-background z-10 flex-shrink-0">
-          <div className="w-full flex justify-between items-center">
-            <Button variant="outline" size="sm" disabled className="invisible">
-              <Download className="mr-2 h-4 w-4" />
-              Download
-            </Button>
-            
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+              {MEDIA_TYPES.map((mediaType: MediaTypeConfig) => {
+                const currentUrl = currentMediaUrls[mediaType.key];
+                const newFile = editableMediaFiles[mediaType.key];
+                const isVideo = mediaType.key === 'videos';
+                
+                const hasContent = isVideo 
+                  ? (!!currentUrl || game.hasVideo || !!newFile) // Updated for video: currentUrl is now blob or ''
+                  : (!!currentUrl || !!newFile);
+
+                return (
+                  <div key={mediaType.key} className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold">{mediaType.label}</h3>
+                      {hasContent && (
+                        <div className="inline-flex items-center px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary font-medium">
+                          Active
+                        </div>
+                      )}
+                    </div>
+                    
+                    {isLoadingUrls && !newFile ? (
+                      <div className="h-48 w-full bg-muted rounded-lg flex items-center justify-center animate-pulse">
+                        <Loader2 className="h-6 w-6 text-muted-foreground animate-spin" />
+                      </div>
+                    ) : hasContent && !newFile ? (
+                      <div className="relative w-full h-48 bg-muted rounded-lg overflow-hidden group">
+                        {isVideo ? (
+                          currentUrl ? ( // If currentUrl is a blob URL (truthy)
+                            <video 
+                              src={currentUrl}
+                              controls
+                              className="w-full h-full object-contain"
+                              onError={(e) => console.error("Video player error:", e)}
+                            />
+                          ) : ( // currentUrl is empty, but game.hasVideo was true (or newFile would be handled)
+                            <div className="flex items-center justify-center h-full flex-col text-center px-4">
+                              <div className="text-primary text-sm font-medium">Video Available</div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                Preview could not be loaded. File might be missing or corrupted.
+                              </div>
+                            </div>
+                          )
+                        ) : (
+                          <Image 
+                            src={currentUrl} 
+                            alt={`Current ${mediaType.label}`} 
+                            layout="fill" 
+                            objectFit="contain" 
+                            className="transition-transform duration-300 group-hover:scale-[1.02]"
+                          />
+                        )}
+                        <Button 
+                          variant="destructive" 
+                          size="icon" 
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 z-10"
+                          onClick={async () => {
+                            // TODO: Implement deletion of this specific media file
+                            console.log("Delete functionality for individual media to be implemented.");
+                            alert(`Delete for ${mediaType.label} to be implemented.`);
+                          }}
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : !newFile && (
+                      <div className="h-48 w-full bg-muted/30 rounded-lg flex flex-col items-center justify-center border border-dashed">
+                        <ImageOff className="h-8 w-8 text-muted-foreground/60 mb-1" />
+                        <p className="text-sm text-muted-foreground">No {mediaType.label} available</p>
+                      </div>
+                    )}
+
+                    <FileUploadDropzone
+                      value={editableMediaFiles[mediaType.key] || null}
+                      onChange={(file) => handleMediaFileChange(mediaType.key, file)}
+                      accept={mediaType.accept}
+                      label={hasContent ? `Replace ${mediaType.label}` : `Upload ${mediaType.label}`}
+                      description={hasContent ? `Current: ${game?.name}${mediaType.extension}` : mediaType.description}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </ScrollArea>
+
+        <SheetFooter className="p-6 border-t border-border/40 sticky bottom-0 bg-background z-10 flex-shrink-0">
+          <div className="max-w-7xl mx-auto w-full flex justify-between items-center gap-4">
             <SheetClose asChild>
-              <Button variant="default">Close</Button>
+              <Button variant="outline" size="lg" className="px-6">Close</Button>
             </SheetClose>
-            
-            <Button variant="outline" size="sm" disabled className="invisible">
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Open
+            <Button 
+              onClick={handleSaveChanges} 
+              disabled={isSaving || Object.keys(editableMediaFiles).every(k => !editableMediaFiles[k])}
+              size="lg"
+              className="px-6"
+            >
+              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              {isSaving ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </SheetFooter>

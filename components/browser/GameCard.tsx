@@ -1,39 +1,39 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Card, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Edit, Eye, Trash2, ImageOff } from 'lucide-react';
-import { CONSOLES } from '@/lib/constants';
-import { Game } from '@/types';
-import Image from 'next/image';
+import { useState, useEffect } from "react";
+import { Card, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Eye, ImageOff } from "lucide-react";
+import { CONSOLES } from "@/lib/constants";
+import { Game } from "@/types";
+import Image from "next/image";
 
 interface GameCardProps {
   game: Game;
   onView: (game: Game) => void;
-  onEdit: (game: Game) => void;
-  onDelete: (game: Game) => void;
 }
 
 /**
  * Loads a file from a FileSystemFileHandle and returns an object URL
  */
-async function loadFileAsUrl(fileHandle: { getFile: () => Promise<File> }): Promise<string> {
-  if (!fileHandle || typeof fileHandle.getFile !== 'function') {
-    throw new Error('Invalid file handle provided');
+async function loadFileAsUrl(fileHandle: {
+  getFile: () => Promise<File>;
+}): Promise<string> {
+  if (!fileHandle || typeof fileHandle.getFile !== "function") {
+    throw new Error("Invalid file handle provided");
   }
   const file = await fileHandle.getFile();
   return URL.createObjectURL(file);
 }
 
 /**
- * Displays an individual game card with its details, loading images dynamically
+ * Displays an individual game card with screenshot background and logo overlay
  */
-export default function GameCard({ game, onView, onEdit, onDelete }: GameCardProps) {
-  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
+export default function GameCard({ game, onView }: GameCardProps) {
+  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
   const [logoImageUrl, setLogoImageUrl] = useState<string | null>(null);
-  const [isLoadingCover, setIsLoadingCover] = useState(false);
+  const [isLoadingScreenshot, setIsLoadingScreenshot] = useState(false);
   const [isLoadingLogo, setIsLoadingLogo] = useState(false);
 
   // Load images when the component mounts or game data changes
@@ -43,31 +43,80 @@ export default function GameCard({ game, onView, onEdit, onDelete }: GameCardPro
     const loadImages = async () => {
       // Reset state before loading
       if (isMounted) {
-        setCoverImageUrl(null);
+        setScreenshotUrl(null);
         setLogoImageUrl(null);
       }
-      if (coverImageUrl) URL.revokeObjectURL(coverImageUrl);
+      if (screenshotUrl) URL.revokeObjectURL(screenshotUrl);
       if (logoImageUrl) URL.revokeObjectURL(logoImageUrl);
-      
-      if (game.hasCover && game.coverFileHandle) {
-        if (isMounted) setIsLoadingCover(true);
+
+      // Load screenshot if available, otherwise try title screen or cover as fallback
+      if (game.screenshotFileHandle) {
+        if (isMounted) setIsLoadingScreenshot(true);
+        try {
+          const url = await loadFileAsUrl(game.screenshotFileHandle);
+          if (isMounted) setScreenshotUrl(url);
+        } catch (error) {
+          console.error("Error loading screenshot:", error);
+          // Try title screen as fallback
+          if (game.titleScreenFileHandle) {
+            try {
+              const url = await loadFileAsUrl(game.titleScreenFileHandle);
+              if (isMounted) setScreenshotUrl(url);
+            } catch (error) {
+              console.error("Error loading title screen:", error);
+              // Try cover as second fallback
+              if (game.hasCover && game.coverFileHandle) {
+                try {
+                  const url = await loadFileAsUrl(game.coverFileHandle);
+                  if (isMounted) setScreenshotUrl(url);
+                } catch (error) {
+                  console.error("Error loading cover image:", error);
+                }
+              }
+            }
+          }
+        } finally {
+          if (isMounted) setIsLoadingScreenshot(false);
+        }
+      } else if (game.titleScreenFileHandle) {
+        if (isMounted) setIsLoadingScreenshot(true);
+        try {
+          const url = await loadFileAsUrl(game.titleScreenFileHandle);
+          if (isMounted) setScreenshotUrl(url);
+        } catch (error) {
+          console.error("Error loading title screen:", error);
+          // Try cover as fallback
+          if (game.hasCover && game.coverFileHandle) {
+            try {
+              const url = await loadFileAsUrl(game.coverFileHandle);
+              if (isMounted) setScreenshotUrl(url);
+            } catch (error) {
+              console.error("Error loading cover image:", error);
+            }
+          }
+        } finally {
+          if (isMounted) setIsLoadingScreenshot(false);
+        }
+      } else if (game.hasCover && game.coverFileHandle) {
+        if (isMounted) setIsLoadingScreenshot(true);
         try {
           const url = await loadFileAsUrl(game.coverFileHandle);
-          if (isMounted) setCoverImageUrl(url);
+          if (isMounted) setScreenshotUrl(url);
         } catch (error) {
-          console.error('Error loading cover image:', error);
+          console.error("Error loading cover image:", error);
         } finally {
-          if (isMounted) setIsLoadingCover(false);
+          if (isMounted) setIsLoadingScreenshot(false);
         }
       }
-      
+
+      // Load logo/marquee if available
       if (game.hasLogo && game.logoFileHandle) {
-         if (isMounted) setIsLoadingLogo(true);
+        if (isMounted) setIsLoadingLogo(true);
         try {
           const url = await loadFileAsUrl(game.logoFileHandle);
           if (isMounted) setLogoImageUrl(url);
         } catch (error) {
-          console.error('Error loading logo image:', error);
+          console.error("Error loading logo image:", error);
         } finally {
           if (isMounted) setIsLoadingLogo(false);
         }
@@ -79,73 +128,90 @@ export default function GameCard({ game, onView, onEdit, onDelete }: GameCardPro
     // Cleanup function
     return () => {
       isMounted = false;
-      if (coverImageUrl) URL.revokeObjectURL(coverImageUrl);
+      if (screenshotUrl) URL.revokeObjectURL(screenshotUrl);
       if (logoImageUrl) URL.revokeObjectURL(logoImageUrl);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game]); // Rerun effect if game object changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game]);
 
   // Get the console label
-  const consoleLabel = CONSOLES.find(c => c.value === game.console)?.label || game.console;
-  
-  // Count media types available
-  const mediaCount = game.mediaTypes.length;
-  
+  const consoleLabel =
+    CONSOLES.find((c) => c.value === game.console)?.label || game.console;
+
+  // Count media types available, excluding video
+  const mediaCount = game.mediaTypes.filter((type) => type !== "videos").length;
+
   return (
-    <Card className="group relative overflow-hidden border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30 rounded-xl">
-      <div className="relative aspect-[4/5]"> {/* Adjusted aspect ratio */}
-        {/* Cover Image Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-muted/30 to-muted flex items-center justify-center overflow-hidden">
-          {isLoadingCover ? (
+    <Card className="group relative p-0 gap-0 overflow-hidden border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30 rounded-xl">
+      {/* Background Image Container - 4:3 aspect ratio */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden">
+        {/* Screenshot Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-muted/30 to-muted flex items-center justify-center">
+          {isLoadingScreenshot ? (
             <div className="w-full h-full">
               <div className="absolute inset-0 animate-pulse bg-muted-foreground/10"></div>
               <div className="absolute top-1/3 left-1/4 right-1/4 h-8 rounded-md animate-pulse bg-muted-foreground/20"></div>
             </div>
-          ) : coverImageUrl ? (
+          ) : screenshotUrl ? (
             <Image
-              src={coverImageUrl}
-              alt={`Cover for ${game.name}`}
+              src={screenshotUrl}
+              alt={`Screenshot for ${game.name}`}
               layout="fill"
               objectFit="cover"
-              className="transition-all duration-500 group-hover:scale-105 opacity-90 group-hover:opacity-100 group-hover:brightness-105"
+              className="transition-all duration-500 group-hover:scale-105 opacity-95 group-hover:opacity-100 group-hover:brightness-110"
               priority
             />
           ) : (
             <div className="text-center p-4 flex flex-col items-center justify-center h-full">
               <ImageOff className="h-12 w-12 text-muted-foreground/60" />
-              <p className="text-muted-foreground/80 text-sm mt-2">No cover available</p>
+              <p className="text-muted-foreground/80 text-sm mt-2">
+                No image available
+              </p>
             </div>
           )}
         </div>
-        
+
         {/* Dark gradient overlay for better text visibility and logo contrast */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-        
-        {/* Console Badge - Top left */}
-        <div className="absolute top-3 left-3 z-10">
-          <Badge variant="outline" className="backdrop-blur-md bg-black/40 text-white border-white/10 py-1 font-medium">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10"></div>
+
+        {/* Header Section with Tags - Side by Side */}
+        <div className="absolute top-3 left-3 right-3 z-10 flex justify-between items-center">
+          {/* Console Badge - Left */}
+          <Badge
+            variant="outline"
+            className="backdrop-blur-md bg-black/40 text-white border-white/10 py-1 font-medium"
+          >
             {consoleLabel}
           </Badge>
-        </div>
-        
-        {/* Media Type + Video Badge - Bottom right */}
-        <div className="absolute bottom-3 right-3 z-10 flex flex-col gap-2 items-end">
-          <Badge variant="secondary" className="backdrop-blur-md bg-white/10 text-white text-xs">
-            {mediaCount} media type{mediaCount !== 1 ? 's' : ''}
+
+          {/* Media Type Count - Right */}
+          <Badge
+            variant="secondary"
+            className="backdrop-blur-md bg-white/10 text-white text-xs"
+          >
+            {mediaCount} media type{mediaCount !== 1 ? "s" : ""}
           </Badge>
-          
-          {game.hasVideo && (
-            <Badge variant="default" className="bg-red-500/80 backdrop-blur-md text-white font-medium">
+        </div>
+
+        {/* Video Badge - If present */}
+        {game.hasVideo && (
+          <div className="absolute top-12 right-3 z-10">
+            <Badge
+              variant="default"
+              className="bg-red-500/80 backdrop-blur-md text-white font-medium"
+            >
               Video
             </Badge>
-          )}
-        </div>
-        
+          </div>
+        )}
+
         {/* Game Title Overlay at bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
-          <h3 className="text-xl font-semibold text-white truncate drop-shadow-md">{game.name}</h3>
+          <h3 className="text-xl font-semibold text-white truncate drop-shadow-md">
+            {game.name}
+          </h3>
         </div>
-        
+
         {/* Logo/Marquee overlay in center */}
         {game.hasLogo && (
           <div className="absolute inset-0 flex items-center justify-center p-5 z-10">
@@ -168,39 +234,19 @@ export default function GameCard({ game, onView, onEdit, onDelete }: GameCardPro
           </div>
         )}
       </div>
-      
-      {/* Action Buttons */}
-      <CardFooter className="flex items-center justify-between py-3 px-3 bg-card/95 backdrop-blur-sm">
-        <Button 
-          variant="secondary" 
-          size="sm" 
+
+      {/* Action Button - Only View Details */}
+      <CardFooter className="flex items-center justify-center py-3 px-3 bg-card/95 backdrop-blur-sm">
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={() => onView(game)}
-          className="font-medium hover:bg-primary hover:text-primary-foreground"
+          className="font-medium hover:bg-primary hover:text-primary-foreground w-full transition-colors duration-200"
         >
           <Eye className="mr-1.5 h-4 w-4" />
           View Details
         </Button>
-        
-        <div className="flex gap-1.5">
-          <Button 
-            variant="outline" 
-            size="icon" 
-            className="h-8 w-8 bg-background/80 hover:bg-primary/10 hover:text-primary hover:border-primary/50"
-            onClick={() => onEdit(game)}
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            size="icon" 
-            className="h-8 w-8 bg-background/80 text-destructive hover:bg-destructive/10 hover:text-destructive"
-            onClick={() => onDelete(game)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
       </CardFooter>
     </Card>
   );
-} 
+}
