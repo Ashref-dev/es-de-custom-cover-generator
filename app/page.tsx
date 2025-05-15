@@ -22,11 +22,24 @@ export const metadata = {
  * Serves as a landing page with links to generator and browse pages
  */
 export default function Home() {
-  // Random user profile images for the testimonials section
-  const userAvatars = [
-    "https://randomuser.me/api/portraits/women/44.jpg",
-    "https://randomuser.me/api/portraits/men/32.jpg",
-    "https://randomuser.me/api/portraits/women/68.jpg",
+  // Random user profile images for the testimonials section with their GitHub profile links
+  const users = [
+    {
+      avatar: "https://avatars.githubusercontent.com/u/109633107?v=4",
+
+      github: "https://github.com/Ashref-dev",
+      name: "Ashref Ben Abdallah",
+    },
+    {
+      avatar: "https://avatars.githubusercontent.com/u/85387641?v=4",
+      github: "https://github.com/Baltii",
+      name: "Ahmed Balti",
+    },
+    {
+      avatar: "https://avatars.githubusercontent.com/u/93385261?v=4",
+      github: "https://github.com/rayenfassatoui",
+      name: "Rayen Fassatoui",
+    },
   ];
 
   return (
@@ -94,27 +107,35 @@ export default function Home() {
 
           <div className="mt-10 flex items-center space-x-3">
             <div className="flex -space-x-3 transition-all duration-300 hover:-space-x-1">
-              {userAvatars.map((avatar, index) => (
-                <div
+              {users.map((user, index) => (
+                <Link
                   key={index}
+                  href={user.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className={cn(
                     "h-10 w-10 rounded-full border-2 border-background overflow-hidden transform transition-all duration-300",
-                    "hover:scale-110 hover:z-10"
+                    "hover:scale-110 hover:z-10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   )}
+                  title={`Visit ${user.name}'s GitHub profile`}
                 >
                   <Image
-                    src={avatar}
-                    alt={`User ${index + 1}`}
+                    src={user.avatar}
+                    alt={`${user.name}'s GitHub avatar`}
                     width={40}
                     height={40}
                     className="h-full w-full object-cover"
                   />
-                </div>
+                </Link>
               ))}
             </div>
             <p className="text-muted-foreground">
-              <span className="font-semibold text-foreground">100K+</span>{" "}
-              Satisfied Users
+              Endorsed by
+              <span className="font-semibold text-foreground">
+                {" "}
+                atleast 3
+              </span>{" "}
+              gamers xD
             </p>
           </div>
         </div>

@@ -20,8 +20,15 @@ export const metadata: Metadata = {
     template: "%s | ES-DE Media Manager",
     default: "ES-DE Media Manager",
   },
-  description: "Generate and manage media files for Emulation Station Desktop Edition",
-  keywords: ["emulation", "esde", "emulation station desktop edition", "media", "manager"],
+  description:
+    "Generate and manage media files for Emulation Station Desktop Edition",
+  keywords: [
+    "emulation",
+    "esde",
+    "emulation station desktop edition",
+    "media",
+    "manager",
+  ],
 };
 
 export default function RootLayout({
@@ -41,13 +48,22 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Navigation />
-          <main className="min-h-screen py-4">
-            {children}
-          </main>
+          <main className="min-h-screen py-4">{children}</main>
           <footer className="py-6 border-t">
             <div className="container mx-auto px-4 flex items-center justify-center text-sm text-muted-foreground">
               <GamepadIcon className="h-4 w-4 gradient-icon mr-2" />
-              <p>ES-DE Media Manager &copy; {new Date().getFullYear()}</p>
+              <p>
+                ES-DE Media Manager &copy; {new Date().getFullYear()} - made
+                with ❤️ by{" "}
+                <a
+                  href="https://ashref.tn"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  Ashref
+                </a>
+              </p>
             </div>
           </footer>
         </ThemeProvider>
