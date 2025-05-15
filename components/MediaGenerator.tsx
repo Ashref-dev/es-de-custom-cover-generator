@@ -269,7 +269,7 @@ export default function MediaGenerator() {
       <Confetti active={showConfetti} duration={6000} />
 
       <CardHeader className="text-center pt-8 pb-6">
-        <CardTitle className="font-pixel font-normal text-4xl md:text-6xl mb-4 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+        <CardTitle className="font-pixel text-4xl md:text-6xl mb-4 bg-gradient-to-r from-[var(--gradient-1)] to-[var(--gradient-2)] bg-clip-text text-transparent">
           ESDE Media Generator
         </CardTitle>
         <CardDescription className="text-base md:text-lg max-w-lg mx-auto">
@@ -315,10 +315,10 @@ export default function MediaGenerator() {
         {/* Media Folder Selection */}
         <div className="space-y-4">
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-2xl font-pixel bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+            <h3 className="text-2xl font-pixel bg-gradient-to-r from-[var(--gradient-1)] to-[var(--gradient-2)] bg-clip-text text-transparent">
               Step 1: Select Folder
             </h3>
-            <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent"></div>
+            <div className="h-px flex-1 bg-gradient-to-r from-[var(--gradient-1)]/20 to-transparent"></div>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-muted/30 p-4 rounded-lg">
@@ -347,10 +347,10 @@ export default function MediaGenerator() {
         {/* ROM Name */}
         <div className="space-y-4">
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-2xl font-pixel bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+            <h3 className="text-2xl font-pixel bg-gradient-to-r from-[var(--gradient-1)] to-[var(--gradient-2)] bg-clip-text text-transparent">
               Step 2: Game Details
             </h3>
-            <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent"></div>
+            <div className="h-px flex-1 bg-gradient-to-r from-[var(--gradient-1)]/20 to-transparent"></div>
           </div>
 
           <div className="space-y-2">
@@ -387,10 +387,10 @@ export default function MediaGenerator() {
         {/* Media Upload Sections */}
         <div className="space-y-4">
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-2xl font-pixel bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+            <h3 className="text-2xl font-pixel bg-gradient-to-r from-[var(--gradient-1)] to-[var(--gradient-2)] bg-clip-text text-transparent">
               Step 3: Media Files
             </h3>
-            <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent"></div>
+            <div className="h-px flex-1 bg-gradient-to-r from-[var(--gradient-1)]/20 to-transparent"></div>
           </div>
 
           <p className="text-sm text-muted-foreground mb-6">

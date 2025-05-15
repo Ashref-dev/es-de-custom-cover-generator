@@ -1,11 +1,16 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { ThemeToggle } from '@/components/ThemeToggle';
-import { cn } from '@/lib/utils';
-import { type NavigationItem } from '@/types';
-import { HomeIcon, Settings2Icon, FolderOpenIcon } from 'lucide-react';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { cn } from "@/lib/utils";
+import { type NavigationItem } from "@/types";
+import {
+  HomeIcon,
+  Settings2Icon,
+  FolderOpenIcon,
+  GamepadIcon,
+} from "lucide-react";
 
 /**
  * Navigation component that provides links to all main pages
@@ -13,30 +18,31 @@ import { HomeIcon, Settings2Icon, FolderOpenIcon } from 'lucide-react';
  */
 export function Navigation() {
   const pathname = usePathname();
-  
+
   const navItems: NavigationItem[] = [
-    { href: '/', label: 'Home', icon: HomeIcon },
-    { href: '/generator', label: 'Generator', icon: Settings2Icon },
-    { href: '/browse', label: 'Browse', icon: FolderOpenIcon },
+    { href: "/", label: "Home", icon: HomeIcon },
+    { href: "/generator", label: "Generator", icon: Settings2Icon },
+    { href: "/browse", label: "Browse", icon: FolderOpenIcon },
   ];
 
   return (
-    <header className="border-b sticky top-0 bg-background z-10">
+    <header className="border-b sticky top-0 bg-background !z-50">
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
-        <Link href="/" className="font-semibold text-xl">
-          ESDE Media Generator
+        <Link href="/" className="flex items-center gap-2">
+          <GamepadIcon className="h-6 w-6 gradient-icon" />
+          <span className="font-semibold">ES-DE Media Manager</span>
         </Link>
-        
+
         <nav className="flex items-center space-x-2">
           <ul className="flex items-center space-x-1 md:space-x-2">
             {navItems.map((item) => (
               <li key={item.href}>
-                <Link 
+                <Link
                   href={item.href}
                   className={cn(
                     "px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center",
-                    pathname === item.href 
-                      ? "bg-primary/10 text-primary" 
+                    pathname === item.href
+                      ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:text-foreground hover:bg-accent"
                   )}
                 >
@@ -46,10 +52,10 @@ export function Navigation() {
               </li>
             ))}
           </ul>
-          
+
           <ThemeToggle className="ml-2" />
         </nav>
       </div>
     </header>
   );
-} 
+}

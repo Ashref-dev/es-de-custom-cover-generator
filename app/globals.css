@@ -39,6 +39,8 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-gradient-1: var(--gradient-1);
+  --color-gradient-2: var(--gradient-2);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -70,6 +72,8 @@
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
+  --gradient-1: #ff4b2b; /* Orange/red start */
+  --gradient-2: #ff416c; /* Pink end */
   --sidebar: oklch(0.984 0.003 247.858);
   --sidebar-foreground: oklch(0.129 0.042 264.695);
   --sidebar-primary: oklch(0.208 0.042 265.755);
@@ -104,6 +108,8 @@
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
+  --gradient-1: #ff4b2b; /* Orange/red - same as light mode for consistency */
+  --gradient-2: #ff416c; /* Pink - same as light mode for consistency */
   --sidebar: oklch(0.208 0.042 265.755);
   --sidebar-foreground: oklch(0.984 0.003 247.858);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -121,4 +127,126 @@
   body {
     @apply bg-background text-foreground font-sans;
   }
+}
+
+.gradient-text {
+  background: linear-gradient(to right, var(--gradient-1), var(--gradient-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+}
+
+/* For icons we'll just use the solid color */
+.gradient-icon {
+  color: var(--gradient-1);
+}
+
+/* Add this to your global styles or in a parent component */
+@layer components {
+  #icon-gradient-def {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+}
+
+/* Add the gradient definition to body */
+body::before {
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  position: absolute;
+}
+
+/* Animation for floating elements that maintain rotation */
+@keyframes float-1 {
+  0%, 100% {
+    transform: translateY(0) rotate(-8deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(-8deg);
+  }
+}
+
+@keyframes float-2 {
+  0%, 100% {
+    transform: translateY(0) rotate(5deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(5deg);
+  }
+}
+
+@keyframes float-3 {
+  0%, 100% {
+    transform: translateY(0) rotate(10deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(10deg);
+  }
+}
+
+@keyframes float-4 {
+  0%, 100% {
+    transform: translateY(0) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(-5deg);
+  }
+}
+
+@keyframes float-5 {
+  0%, 100% {
+    transform: translateY(0) rotate(8deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(8deg);
+  }
+}
+
+/* Floating animations with consistent rotation */
+.float-animation-1 {
+  animation: float-1 6s ease-in-out infinite;
+}
+
+.float-animation-2 {
+  animation: float-2 8s ease-in-out infinite;
+}
+
+.float-animation-3 {
+  animation: float-3 10s ease-in-out infinite;
+}
+
+.float-animation-4 {
+  animation: float-4 7s ease-in-out infinite;
+}
+
+.float-animation-5 {
+  animation: float-5 9s ease-in-out infinite;
+}
+
+/* Original animations (keeping them for backward compatibility) */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float 8s ease-in-out infinite;
+}
+
+.animate-float-slower {
+  animation: float 10s ease-in-out infinite;
 }

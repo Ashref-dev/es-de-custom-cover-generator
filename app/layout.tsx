@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navigation } from "@/components/Navigation";
+import { GamepadIcon } from "lucide-react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,11 +17,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | ESDE Media Generator",
-    default: "ESDE Media Generator",
+    template: "%s | ES-DE Media Manager",
+    default: "ES-DE Media Manager",
   },
   description: "Generate and manage media files for Emulation Station Desktop Edition",
-  keywords: ["emulation", "esde", "emulation station", "media", "generator"],
+  keywords: ["emulation", "esde", "emulation station desktop edition", "media", "manager"],
 };
 
 export default function RootLayout({
@@ -44,8 +45,9 @@ export default function RootLayout({
             {children}
           </main>
           <footer className="py-6 border-t">
-            <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-              <p>ESDE Media Generator &copy; {new Date().getFullYear()}</p>
+            <div className="container mx-auto px-4 flex items-center justify-center text-sm text-muted-foreground">
+              <GamepadIcon className="h-4 w-4 gradient-icon mr-2" />
+              <p>ES-DE Media Manager &copy; {new Date().getFullYear()}</p>
             </div>
           </footer>
         </ThemeProvider>

@@ -9,17 +9,12 @@ import {
   X,
   AlertTriangle,
   HelpCircle,
+  RefreshCw,
 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import GameCard from "./GameCard";
 import { GameDetailsDrawer } from "./GameDetailsDrawer";
+import { GameFilters } from "./GameFilters";
 import { Game, ConsoleOption } from "@/types";
 import {
   openMediaFolder,
@@ -44,10 +39,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { RefreshCw } from "lucide-react";
 
 // Define a type for the directory handle, even if it's basic
 // This avoids using 'any' directly in the state
@@ -98,7 +90,7 @@ export default function GameBrowser() {
   const handleScanMediaFolder = async (readWrite = false) => {
     // Close the help dialog if it was open
     setShowHelpDialog(false);
-    
+
     setLoading(true);
     setError(null);
     setGames([]);
@@ -287,64 +279,17 @@ export default function GameBrowser() {
       )}
 
       {games.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-          <div className="md:col-span-6 lg:col-span-5">
-            <Input
-              placeholder="Search games..."
-              className="w-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          <div className="md:col-span-3 lg:col-span-3">
-            <Select value={selectedConsole} onValueChange={setSelectedConsole}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Consoles" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Consoles</SelectItem>
-                {availableConsoles.map((console) => (
-                  <SelectItem key={console.value} value={console.value}>
-                    {console.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="md:col-span-3 lg:col-span-2">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={handleResetFilters}
-              disabled={selectedConsole === "all" && searchQuery === ""}
-            >
-              Reset Filters
-            </Button>
-          </div>
-        </div>
+        <GameFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedConsole={selectedConsole}
+          onConsoleChange={setSelectedConsole}
+          availableConsoles={availableConsoles}
+          onResetFilters={handleResetFilters}
+          filteredCount={filteredGames.length}
+          totalCount={games.length}
+        />
       )}
-
-      {games.length > 0 && (
-        <div className="flex justify-between items-center">
-          <p className="text-sm text-muted-foreground">
-            Showing {filteredGames.length} of {games.length} games
-          </p>
-
-          {filteredGames.length === 0 && (
-            <Badge
-              variant="outline"
-              className="flex gap-2 items-center bg-yellow-50 text-yellow-800 border-yellow-300"
-            >
-              <AlertTriangle className="h-3 w-3" />
-              No results for your search
-            </Badge>
-          )}
-        </div>
-      )}
-
-      {games.length > 0 && <Separator className="my-2" />}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         {filteredGames.map((game) => (
@@ -439,47 +384,49 @@ export default function GameBrowser() {
               Please follow these steps to scan your ES-DE media library:
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-2">
             <div className="rounded-md bg-muted p-4 text-sm">
               <ol className="list-decimal pl-4 space-y-3">
                 <li>
-                  Navigate to the <span className="font-semibold">downloaded_media</span> folder 
+                  Navigate to the{" "}
+                  <span className="font-semibold">downloaded_media</span> folder
                   inside your ES-DE installation directory
                 </li>
                 <li>
-                  On macOS, this is typically located at: 
+                  On macOS, this is typically located at:
                   <span className="font-mono text-xs block mt-1 bg-background p-1.5 rounded border">
                     ~/ES-DE/downloaded_media
                   </span>
                 </li>
                 <li>
-                  Select the <span className="font-semibold">downloaded_media</span> folder when prompted
+                  Select the{" "}
+                  <span className="font-semibold">downloaded_media</span> folder
+                  when prompted
                 </li>
                 <li>
-                  Accept the browser permission dialog asking for access to the folder
+                  Accept the browser permission dialog asking for access to the
+                  folder
                 </li>
               </ol>
             </div>
-            
+
             <div className="bg-amber-50 text-amber-800 p-3 rounded-md text-sm flex gap-2">
               <AlertTriangle className="h-5 w-5 flex-shrink-0 text-amber-600" />
               <p>
-                Make sure to select the correct <span className="font-semibold">downloaded_media</span> folder, 
+                Make sure to select the correct{" "}
+                <span className="font-semibold">downloaded_media</span> folder,
                 not individual console folders within it.
               </p>
             </div>
           </div>
-          
+
           <DialogFooter className="sm:justify-center gap-2 sm:gap-0">
-            <Button 
-              variant="ghost" 
-              onClick={() => setShowHelpDialog(false)}
-            >
+            <Button variant="ghost" onClick={() => setShowHelpDialog(false)}>
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               onClick={() => handleScanMediaFolder(!!mainDirHandle)}
               className="gap-2"
             >
