@@ -4,10 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, X } from "lucide-react";
 import { ConsoleOption } from "@/types";
-import Image from "next/image";
-import { Combobox, ComboboxOption } from "@/components/ui/combobox";
+import { ConsoleCarousel } from "./ConsoleCarousel";
 
 interface GameFiltersProps {
   searchQuery: string;
@@ -36,70 +35,55 @@ export function GameFilters({
   const filtersActive = selectedConsole !== "all" || searchQuery !== "";
   const hasNoResults = filteredCount === 0 && totalCount > 0;
 
-  // Convert available consoles to ComboboxOption format with icons
-  const consoleOptions: ComboboxOption[] = [
-    {
-      value: "all",
-      label: "All Consoles",
-    },
-    ...availableConsoles.map((console) => ({
-      value: console.value,
-      label: console.label,
-      icon: (
-        <div className="relative w-8 h-8 flex-shrink-0">
-          <Image
-            src={`/logos/${console.value}.png`}
-            alt={console.label}
-            fill
-            className="object-contain"
-            onError={(e) => {
-              // Fallback if image doesn't exist
-              e.currentTarget.style.display = "none";
-            }}
-          />
-        </div>
-      ),
-    })),
+  // Add "All Consoles" option
+  const consoleOptions = [
+    { value: "all", label: "All Consoles" },
+    ...availableConsoles,
   ];
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
-        <div className="md:col-span-6 lg:col-span-5">
-          <Input
-            placeholder="Search games..."
-            className="w-full h-10"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-          />
-        </div>
+      <div className="space-y-6">
+        <ConsoleCarousel
+          consoles={consoleOptions}
+          selectedConsole={selectedConsole}
+          onConsoleChange={onConsoleChange}
+        />
 
-        <div className="md:col-span-3 lg:col-span-3">
-          <Combobox 
-            options={consoleOptions}
-            value={selectedConsole}
-            onValueChange={onConsoleChange}
-            placeholder="Select Console"
-            emptyText="No console found"
-            popoverWidth="content"
-            contentClassName="min-w-[220px]"
-            triggerClassName="h-10"
-          />
-        </div>
+        <div className="flex w-full items-center gap-2">
+          <div className="relative flex-1">
+            <Input
+              placeholder="Search games..."
+              className="w-full h-10 pr-10"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                onClick={() => onSearchChange("")}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
 
-        <div className="md:col-span-3 lg:col-span-2">
           <Button
-            variant="outline"
-            className="w-full h-10"
+            variant="outline" 
+            size="sm"
+            className={`h-10 gap-1.5 border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600 ${!filtersActive ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={onResetFilters}
             disabled={!filtersActive}
           >
-            Reset Filters
+            <X className="h-4 w-4" />
+            Clear
           </Button>
         </div>
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mt-4">
         <p className="text-sm text-muted-foreground">
           Showing {filteredCount} of {totalCount} games
         </p>
