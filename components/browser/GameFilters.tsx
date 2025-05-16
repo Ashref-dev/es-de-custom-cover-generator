@@ -71,9 +71,11 @@ export function GameFilters({
           </div>
 
           <Button
-            variant="outline" 
+            variant="outline"
             size="sm"
-            className={`h-10 gap-1.5 border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600 ${!filtersActive ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`h-10 gap-1.5 border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600 ${
+              !filtersActive ? "opacity-50 cursor-not-allowed" : ""
+            }`}
             onClick={onResetFilters}
             disabled={!filtersActive}
           >

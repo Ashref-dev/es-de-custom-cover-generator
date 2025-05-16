@@ -6,13 +6,7 @@ import { Search, Gamepad2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { ConsoleOption } from "@/types";
 import { Input } from "@/components/ui/input";
-import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
-} from "@/components/ui/carousel";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
@@ -76,8 +70,6 @@ export function ConsoleCarousel({
 }: ConsoleCarouselProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredConsoles, setFilteredConsoles] = useState(consoles);
-  const [api, setApi] = useState<any>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
 
   // Filter consoles based on search query
   useEffect(() => {
@@ -91,42 +83,6 @@ export function ConsoleCarousel({
     }
   }, [searchQuery, consoles]);
 
-  // Update current index for pagination dots
-  useEffect(() => {
-    if (!api) return;
-
-    const onSelect = () => {
-      setCurrentIndex(api.selectedScrollSnap());
-    };
-
-    api.on("select", onSelect);
-    onSelect();
-
-    return () => {
-      api.off("select", onSelect);
-    };
-  }, [api]);
-
-  // When filtering, scroll to start
-  useEffect(() => {
-    if (api) {
-      api.scrollTo(0);
-    }
-  }, [filteredConsoles.length, api]);
-
-  // Get the visible item count for pagination
-  const getVisibleItemCount = () => {
-    if (typeof window === "undefined") return 5;
-
-    if (window.innerWidth < 640) return 3;
-    if (window.innerWidth < 1024) return 4;
-    return 5;
-  };
-
-  const itemsPerScreen = getVisibleItemCount();
-  const pageCount = Math.ceil(filteredConsoles.length / itemsPerScreen);
-  const currentPage = Math.floor(currentIndex / itemsPerScreen);
-
   return (
     <div className="space-y-3">
       <div className="relative">
@@ -139,99 +95,61 @@ export function ConsoleCarousel({
         />
       </div>
 
-      <div className="relative py-4 px-2">
-        <Carousel
-          opts={{
-            align: "start",
-            loop: false,
-          }}
-          setApi={setApi}
-          className="w-full"
-        >
-          <CarouselContent className="-ml-3 md:-ml-6">
-            {filteredConsoles.map((console) => (
-              <CarouselItem
-                key={console.value}
-                className="pl-3 md:pl-6 basis-1/3 md:basis-1/4 lg:basis-1/5"
-              >
-                <motion.div
-                  className={cn(
-                    "flex flex-col items-center justify-center p-2 h-36 rounded-lg border-2 cursor-pointer transition-all overflow-visible",
-                    selectedConsole === console.value
-                      ? "border-primary bg-primary/5 shadow-md"
-                      : "border-border hover:bg-accent hover:border-primary/30"
-                  )}
-                  whileHover={{
-                    boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
-                  }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => onConsoleChange(console.value)}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.15,
-                    type: "spring",
-                    stiffness: 400,
-                    damping: 15,
-                  }}
-                >
-                  <div
-                    className={cn(
-                      "relative w-16 h-16 md:w-20 lg:w-32 flex-shrink-0 mb-2 transition-transform duration-200",
-                      selectedConsole === console.value && "scale-110"
-                    )}
-                  >
-                    <ConsoleImage
-                      consoleValue={console.value}
-                      consoleLabel={console.label}
-                      className={
-                        selectedConsole === console.value ? "priority" : ""
-                      }
-                    />
-                  </div>
-                  <span className="text-xs font-medium truncate w-full text-center">
-                    {console.label}
-                  </span>
-                  {selectedConsole === console.value && (
-                    <Badge
-                      variant="secondary"
-                      className="mt-1 text-[0.65rem] h-5 bg-primary/10 text-primary"
-                    >
-                      Selected
-                    </Badge>
-                  )}
-                </motion.div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <div className="hidden md:block">
-            <CarouselPrevious className="-left-3 bg-background border-border hover:bg-accent" />
-            <CarouselNext className="-right-3 bg-background border-border hover:bg-accent" />
-          </div>
-        </Carousel>
-
-        {/* Pagination dots */}
-        {pageCount > 1 && (
-          <div className="flex justify-center gap-1 mt-4">
-            {Array.from({ length: pageCount }).map((_, i) => (
-              <motion.button
-                key={i}
+      <ScrollArea className="w-full whitespace-nowrap rounded-md pb-2">
+        <div className="flex w-max space-x-3 py-4 px-1">
+          {filteredConsoles.map((console) => (
+            <motion.div
+              key={console.value}
+              className={cn(
+                "flex flex-col items-center justify-center p-2 h-36 w-28 md:w-32 lg:w-36 rounded-lg border-2 cursor-pointer transition-all shrink-0",
+                selectedConsole === console.value
+                  ? "border-primary bg-primary/5 shadow-md"
+                  : "border-border hover:bg-accent hover:border-primary/30"
+              )}
+              whileHover={{
+                boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
+              }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => onConsoleChange(console.value)}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.15,
+                type: "spring",
+                stiffness: 400,
+                damping: 15,
+              }}
+            >
+              <div
                 className={cn(
-                  "w-2 h-2 rounded-full transition-all",
-                  currentPage === i
-                    ? "bg-primary w-4"
-                    : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                  "relative w-16 h-16 md:w-20 lg:w-24 flex-shrink-0 mb-2 transition-transform duration-200",
+                  selectedConsole === console.value && "scale-110"
                 )}
-                onClick={() => api?.scrollTo(i * itemsPerScreen)}
-                aria-label={`Go to page ${i + 1}`}
-                whileHover={{ scale: 1.2 }}
-                whileTap={{ scale: 0.9 }}
-                transition={{ duration: 0.1 }}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+              >
+                <ConsoleImage
+                  consoleValue={console.value}
+                  consoleLabel={console.label}
+                  className={
+                    selectedConsole === console.value ? "priority" : ""
+                  }
+                />
+              </div>
+              <span className="text-xs font-medium truncate w-full text-center">
+                {console.label}
+              </span>
+              {selectedConsole === console.value && (
+                <Badge
+                  variant="secondary"
+                  className="mt-1 text-[0.65rem] h-5 bg-primary/10 text-primary"
+                >
+                  Selected
+                </Badge>
+              )}
+            </motion.div>
+          ))}
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
 
       {filteredConsoles.length === 0 && (
         <div className="text-center text-sm text-muted-foreground py-3 bg-muted/30 rounded-md">

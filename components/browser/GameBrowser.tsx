@@ -157,27 +157,6 @@ export default function GameBrowser() {
     }
   };
 
-  // These functions are kept for potential future use in the GameDetailsDrawer component
-  // but are not currently in use - we'll keep them for when we add these actions to the drawer
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  const handleEditGame = (game: Game) => {
-    console.log(`Edit game with ID: ${game.id}`);
-    // This would open an edit modal or navigate to an edit page
-    alert(`Editing game: ${game.name}`);
-  };
-
-  const confirmDeleteGame = (game: Game) => {
-    if (!mainDirHandle) {
-      setError(
-        "Please scan the media folder again with write permissions to delete files."
-      );
-      return;
-    }
-    setGameToDelete(game);
-    setShowDeleteConfirm(true);
-  };
-  /* eslint-enable @typescript-eslint/no-unused-vars */
-
   const executeDeleteGame = async () => {
     if (!gameToDelete || !mainDirHandle) return;
 
