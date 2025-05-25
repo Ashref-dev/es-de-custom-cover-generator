@@ -68,6 +68,44 @@ async function loadFileAsUrl(fileHandle: any): Promise<string> {
   }
 }
 
+/**
+ * Helper function to clean up old media files with different extensions
+ * before saving a new file to avoid orphaned files.
+ */
+async function cleanupOldMediaFiles(
+  mediaFolderHandle: any,
+  gameName: string,
+  targetFileName: string,
+  isVideo: boolean
+): Promise<void> {
+  // Define common extensions to check for cleanup
+  const extensionsToCheck = isVideo
+    ? [".mp4", ".mkv", ".avi", ".mov", ".webm", ".flv", ".wmv"]
+    : [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".tiff", ".svg"];
+
+  for (const extension of extensionsToCheck) {
+    const potentialFileName = gameName + extension;
+
+    // Skip if this is the file we're about to save
+    if (potentialFileName === targetFileName) {
+      continue;
+    }
+
+    try {
+      await mediaFolderHandle.removeEntry(potentialFileName);
+      console.log(`Cleaned up old media file: ${potentialFileName}`);
+    } catch (error: any) {
+      // NotFoundError is expected and fine - file doesn't exist
+      if (error.name !== "NotFoundError") {
+        console.warn(
+          `Failed to remove old file ${potentialFileName}:`,
+          error.message
+        );
+      }
+    }
+  }
+}
+
 export function GameMediaForm({
   game,
   mainDirHandle,
@@ -180,6 +218,14 @@ export function GameMediaForm({
             );
             const fileName = game.name + mediaType.extension;
 
+            // Clean up old video files with different extensions
+            await cleanupOldMediaFiles(
+              mediaFolderHandle,
+              game.name,
+              fileName,
+              true
+            );
+
             const fileHandle = await mediaFolderHandle.getFileHandle(fileName, {
               create: true,
             });
@@ -203,6 +249,14 @@ export function GameMediaForm({
             { create: true }
           );
           const fileName = game.name + mediaType.extension;
+
+          // Clean up old image files with different extensions
+          await cleanupOldMediaFiles(
+            mediaFolderHandle,
+            game.name,
+            fileName,
+            false
+          );
 
           const fileHandle = await mediaFolderHandle.getFileHandle(fileName, {
             create: true,
@@ -312,8 +366,8 @@ export function GameMediaForm({
                               <p className="text-sm">
                                 <strong>Image Optimization:</strong> PNG images
                                 will be resized (not compressed) to a maximum of
-                                768 pixels on the longest side to keep
-                                their size small while preserving transparency.
+                                768 pixels on the longest side to keep their
+                                size small while preserving transparency.
                               </p>
                             ) : (
                               <p className="text-sm">
