@@ -16,6 +16,7 @@ import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FileUploadProps } from "@/types";
+import { fromBlob } from "image-resize-compress";
 
 // Debounce time in milliseconds
 const DEBOUNCE_DELAY = 750;
@@ -33,7 +34,7 @@ async function convertWebPToJPG(file: File): Promise<File> {
     // Convert using fromBlob with high quality and original dimensions
     const resizedBlob = await fromBlob(
       file,
-      95, // High quality for conversion (95%)
+      100,
       "auto", // Keep original width
       "auto", // Keep original height
       "jpeg" // Convert to JPEG format

@@ -145,10 +145,10 @@ export function GameMediaForm({
           ) {
             try {
               // Determine max dimension based on media type
-              const maxDimension = mediaType.key === "marquees" ? 512 : 1920;
+              const maxDimension = mediaType.key === "marquees" ? 768 : 1920;
 
-              // Use effective compression quality (90 for good balance of quality/size)
-              const qualitySetting = 90;
+              // Note: PNG files will only be resized, not compressed, to preserve transparency
+              const qualitySetting = 85;
 
               const optimizedFile = await optimizeImage(
                 newFile,
@@ -308,16 +308,20 @@ export function GameMediaForm({
                             </div>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="max-w-xs">
-                            <p className="text-sm">
-                              <strong>Image Optimization:</strong> Resizes
-                              images to max{" "}
-                              {mediaType.key === "marquees"
-                                ? "512px"
-                                : "1920px"}{" "}
-                              on longest side, preserves original format, and
-                              applies 85% quality compression for optimal
-                              performance.
-                            </p>
+                            {mediaType.key === "marquees" ? (
+                              <p className="text-sm">
+                                <strong>Image Optimization:</strong> PNG images
+                                will be resized (not compressed) to a maximum of
+                                768 pixels on the longest side to keep
+                                their size small while preserving transparency.
+                              </p>
+                            ) : (
+                              <p className="text-sm">
+                                <strong>Image Optimization:</strong> Images will
+                                be resized and compressed (85% quality) to a
+                                maximum of 1920 pixels on the longest side.
+                              </p>
+                            )}
                           </TooltipContent>
                         </Tooltip>
                       </div>
