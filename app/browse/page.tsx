@@ -1,8 +1,9 @@
-import GameBrowser from '@/components/browser/GameBrowser';
+import GameBrowser from "@/components/browser/GameBrowser";
 
 export const metadata = {
   title: "Browse Media",
-  description: "Browse and manage your ESDE media files for different consoles.",
+  description:
+    "Browse and manage your ESDE media files for different consoles.",
 };
 
 /**
@@ -15,4 +16,4 @@ export default function BrowsePage() {
       <GameBrowser />
     </div>
   );
-} 
+}

@@ -72,8 +72,8 @@
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --gradient-1: #ff4b2b; /* Orange/red start */
-  --gradient-2: #ff416c; /* Pink end */
+  --gradient-1: #ff4b2b;
+  --gradient-2: #ff416c; 
   --sidebar: oklch(0.984 0.003 247.858);
   --sidebar-foreground: oklch(0.129 0.042 264.695);
   --sidebar-primary: oklch(0.208 0.042 265.755);
@@ -108,8 +108,8 @@
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --gradient-1: #ff4b2b; /* Orange/red - same as light mode for consistency */
-  --gradient-2: #ff416c; /* Pink - same as light mode for consistency */
+  --gradient-1: #ff4b2b; 
+  --gradient-2: #ff416c; 
   --sidebar: oklch(0.208 0.042 265.755);
   --sidebar-foreground: oklch(0.984 0.003 247.858);
   --sidebar-primary: oklch(0.488 0.243 264.376);
