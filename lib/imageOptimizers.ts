@@ -12,13 +12,13 @@ import { fromBlob } from "image-resize-compress";
  *
  * @param originalFile The original image File object.
  * @param maxDimension The maximum allowed dimension (width or height) in pixels.
- * @param qualitySetting The quality setting for compression (0-100), used for JPEG/WebP. Defaults to 85.
+ * @param qualitySetting The quality setting for compression (0-100), used for JPEG/WebP. Defaults to 75.
  * @returns A Promise that resolves with the optimized File object (or the original if no optimization was needed).
  */
 export async function optimizeImage(
   originalFile: File,
   maxDimension: number,
-  qualitySetting: number = 85
+  qualitySetting: number = 75
 ): Promise<File> {
   const originalMimeType = originalFile.type;
   const isPng = originalMimeType === "image/png";

@@ -183,16 +183,9 @@ export function GameMediaForm({
           ) {
             try {
               // Determine max dimension based on media type
-              const maxDimension = mediaType.key === "marquees" ? 768 : 1920;
+              const maxDimension = mediaType.key === "marquees" ? 600 : 1920;
 
-              // Note: PNG files will only be resized, not compressed, to preserve transparency
-              const qualitySetting = 85;
-
-              const optimizedFile = await optimizeImage(
-                newFile,
-                maxDimension,
-                qualitySetting
-              );
+              const optimizedFile = await optimizeImage(newFile, maxDimension);
 
               newFile = optimizedFile; // Use the optimized file
             } catch (optimizationError) {
@@ -366,13 +359,13 @@ export function GameMediaForm({
                               <p className="text-sm">
                                 <strong>Image Optimization:</strong> PNG images
                                 will be resized (not compressed) to a maximum of
-                                768 pixels on the longest side to keep their
+                                600 pixels on the longest side to keep their
                                 size small while preserving transparency.
                               </p>
                             ) : (
                               <p className="text-sm">
                                 <strong>Image Optimization:</strong> Images will
-                                be resized and compressed (85% quality) to a
+                                be resized and compressed (75% quality) to a
                                 maximum of 1920 pixels on the longest side.
                               </p>
                             )}
