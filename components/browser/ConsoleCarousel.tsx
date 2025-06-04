@@ -228,7 +228,7 @@ export function ConsoleCarousel({
                 {selectedConsole === console.value && (
                   <motion.div
                     id={`selected-${console.value}`}
-                    className="absolute -top-1 -right-1 z-10"
+                    className="absolute -top-[1px] -right-[1px] z-10"
                     initial={{ scale: 0, rotate: -10 }}
                     animate={{ scale: 1, rotate: 0 }}
                     exit={{ scale: 0, rotate: 10 }}
