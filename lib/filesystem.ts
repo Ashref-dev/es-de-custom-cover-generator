@@ -223,7 +223,7 @@ export async function deleteGameMedia(dirHandle: any, consoleName: string, gameN
         const mediaDirHandle = await consoleHandle.getDirectoryHandle(mediaType.folder);
         
         // Iterate through files in the media directory to find matches
-        for await (const [fileName, fileHandle] of mediaDirHandle.entries()) {
+        for await (const [fileName] of mediaDirHandle.entries()) {
           // Check if the file name (without extension) matches the game name
           const currentFileGameName = fileName.replace(/\.[^/.]+$/, "");
           if (currentFileGameName === gameName) {

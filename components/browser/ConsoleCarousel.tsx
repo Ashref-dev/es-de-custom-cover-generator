@@ -180,7 +180,7 @@ export function ConsoleCarousel({
           aria-label="Console selection carousel"
         >
           <div className="flex w-max space-x-3 py-4 px-1" role="list">
-            {filteredConsoles.map((console, index) => (
+            {filteredConsoles.map((console) => (
               <motion.button
                 key={console.value}
                 ref={(el) => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { ConsoleSelectorProps } from '@/lib/types';
+import { ConsoleSelectorProps } from '@/types';
 import { CONSOLES } from '@/lib/constants';
 import {
     Select,

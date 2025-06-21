@@ -46,29 +46,6 @@ const mediaKeyToGameHandle: Record<string, keyof Game | undefined> = {
 };
 
 /**
- * Loads a file from a FileSystemFileHandle and returns an object URL
- */
-async function loadFileAsUrl(fileHandle: any): Promise<string> {
-  if (!fileHandle || typeof fileHandle.getFile !== "function") {
-    if (fileHandle instanceof File) {
-      return URL.createObjectURL(fileHandle);
-    }
-    console.warn(
-      "Invalid or missing file handle for loadFileAsUrl:",
-      fileHandle
-    );
-    return "";
-  }
-  try {
-    const file = await fileHandle.getFile();
-    return URL.createObjectURL(file);
-  } catch (error) {
-    console.error("Error loading file from handle:", error);
-    return "";
-  }
-}
-
-/**
  * Helper function to clean up old media files with different extensions
  * before saving a new file to avoid orphaned files.
  */
