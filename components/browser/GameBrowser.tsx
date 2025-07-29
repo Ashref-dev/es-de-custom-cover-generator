@@ -53,6 +53,7 @@ export default function GameBrowser() {
   // State for selected console filter
   const [selectedConsole, setSelectedConsole] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedMediaFilter, setSelectedMediaFilter] = useState<string>("all");
 
   // State for games data
   const [games, setGames] = useState<Game[]>([]);
@@ -97,10 +98,9 @@ export default function GameBrowser() {
     setMainDirHandle(null);
     setSelectedGame(null);
     setIsDrawerOpen(false);
-    setSearchQuery("");
-    setSelectedConsole("all");
-
-    try {
+      setSearchQuery("");
+      setSelectedConsole("all");
+      setSelectedMediaFilter("all");    try {
       // Open the media folder using the file system access API
       const dirHandle = await openMediaFolder(readWrite);
       setMainDirHandle(dirHandle);
@@ -125,20 +125,64 @@ export default function GameBrowser() {
     }
   };
 
-  // Filter games based on selected console and search query
+  // Filter games based on selected console, search query, and media filter
   const filteredGames = games.filter((game) => {
     const matchesConsole =
       selectedConsole === "all" || game.console === selectedConsole;
     const matchesSearch =
       searchQuery === "" ||
       game.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesConsole && matchesSearch;
+    
+    // Media filter logic
+    let matchesMediaFilter = true;
+    if (selectedMediaFilter !== "all") {
+      switch (selectedMediaFilter) {
+        case "missing-covers":
+          matchesMediaFilter = !game.mediaStatus.covers;
+          break;
+        case "missing-marquees":
+          matchesMediaFilter = !game.mediaStatus.marquees;
+          break;
+        case "missing-screenshots":
+          matchesMediaFilter = !game.mediaStatus.screenshots;
+          break;
+        case "missing-titlescreens":
+          matchesMediaFilter = !game.mediaStatus.titlescreens;
+          break;
+        case "missing-3dboxes":
+          matchesMediaFilter = !game.mediaStatus["3dboxes"];
+          break;
+        case "missing-backcovers":
+          matchesMediaFilter = !game.mediaStatus.backcovers;
+          break;
+        case "missing-fanart":
+          matchesMediaFilter = !game.mediaStatus.fanart;
+          break;
+        case "missing-physicalmedia":
+          matchesMediaFilter = !game.mediaStatus.physicalmedia;
+          break;
+        case "missing-videos":
+          matchesMediaFilter = !game.mediaStatus.videos;
+          break;
+        case "missing-any":
+          matchesMediaFilter = Object.values(game.mediaStatus).some(status => !status);
+          break;
+        case "complete":
+          matchesMediaFilter = Object.values(game.mediaStatus).every(status => status);
+          break;
+        default:
+          matchesMediaFilter = true;
+      }
+    }
+    
+    return matchesConsole && matchesSearch && matchesMediaFilter;
   });
 
   // Reset filters
   const handleResetFilters = () => {
     setSearchQuery("");
     setSelectedConsole("all");
+    setSelectedMediaFilter("all");
   };
 
   // Handlers for game actions
@@ -263,6 +307,8 @@ export default function GameBrowser() {
           onSearchChange={setSearchQuery}
           selectedConsole={selectedConsole}
           onConsoleChange={setSelectedConsole}
+          selectedMediaFilter={selectedMediaFilter}
+          onMediaFilterChange={setSelectedMediaFilter}
           availableConsoles={availableConsoles}
           onResetFilters={handleResetFilters}
           filteredCount={filteredGames.length}

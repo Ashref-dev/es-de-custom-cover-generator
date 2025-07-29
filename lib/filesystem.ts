@@ -145,6 +145,18 @@ async function processMediaFiles(
         hasLogo: false,
         hasVideo: false,
         mediaTypes: [],
+        // Initialize comprehensive media status tracking
+        mediaStatus: {
+          covers: false,
+          marquees: false,
+          screenshots: false,
+          titlescreens: false,
+          "3dboxes": false,
+          backcovers: false,
+          fanart: false,
+          physicalmedia: false,
+          videos: false,
+        },
         // Initialize all handles as undefined
         coverFileHandle: undefined,
         logoFileHandle: undefined,
@@ -158,37 +170,46 @@ async function processMediaFiles(
       gameMap.set(gameName, game);
     }
     
-    // Update media type flags and store corresponding file handles
+    // Update media type flags, store corresponding file handles, and update mediaStatus
     switch (mediaType) {
       case 'covers':
         game.hasCover = true;
         game.coverFileHandle = fileHandle;
+        game.mediaStatus.covers = true;
         break;
       case 'marquees':
         game.hasLogo = true;
         game.logoFileHandle = fileHandle;
+        game.mediaStatus.marquees = true;
         break;
       case 'videos':
         game.hasVideo = true;
+        game.mediaStatus.videos = true;
         // game.videoFileHandle = fileHandle; // If needed
         break;
       case 'screenshots':
         game.screenshotFileHandle = fileHandle;
+        game.mediaStatus.screenshots = true;
         break;
       case '3dboxes':
         game.box3dFileHandle = fileHandle;
+        game.mediaStatus["3dboxes"] = true;
         break;
       case 'backcovers':
         game.backCoverFileHandle = fileHandle;
+        game.mediaStatus.backcovers = true;
         break;
       case 'fanart':
         game.fanartFileHandle = fileHandle;
+        game.mediaStatus.fanart = true;
         break;
       case 'physicalmedia':
         game.physicalMediaFileHandle = fileHandle;
+        game.mediaStatus.physicalmedia = true;
         break;
       case 'titlescreens':
         game.titleScreenFileHandle = fileHandle;
+        game.mediaStatus.titlescreens = true;
         break;
       // Add cases for other media types if necessary
     }

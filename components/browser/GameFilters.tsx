@@ -4,15 +4,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { AlertTriangle, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertTriangle, X, Filter } from "lucide-react";
 import { ConsoleOption } from "@/types";
 import { ConsoleCarousel } from "./ConsoleCarousel";
+import { MEDIA_FILTER_OPTIONS } from "@/lib/constants";
 
 interface GameFiltersProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
   selectedConsole: string;
   onConsoleChange: (value: string) => void;
+  selectedMediaFilter: string;
+  onMediaFilterChange: (value: string) => void;
   availableConsoles: ConsoleOption[];
   onResetFilters: () => void;
   filteredCount: number;
@@ -27,12 +31,14 @@ export function GameFilters({
   onSearchChange,
   selectedConsole,
   onConsoleChange,
+  selectedMediaFilter,
+  onMediaFilterChange,
   availableConsoles,
   onResetFilters,
   filteredCount,
   totalCount,
 }: GameFiltersProps) {
-  const filtersActive = selectedConsole !== "all" || searchQuery !== "";
+  const filtersActive = selectedConsole !== "all" || searchQuery !== "" || selectedMediaFilter !== "all";
   const hasNoResults = filteredCount === 0 && totalCount > 0;
 
   // Add "All Consoles" option
@@ -70,6 +76,25 @@ export function GameFilters({
             )}
           </div>
 
+          {/* Media Filter Dropdown */}
+          <div className="flex-shrink-0">
+            <Select value={selectedMediaFilter} onValueChange={onMediaFilterChange}>
+              <SelectTrigger className="w-48 h-10">
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {MEDIA_FILTER_OPTIONS.map((option) => (
+                  <SelectItem key={option.key} value={option.key}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <Button
             variant="outline"
             size="sm"
@@ -86,9 +111,32 @@ export function GameFilters({
       </div>
 
       <div className="flex justify-between items-center mt-4">
-        <p className="text-sm text-muted-foreground">
-          Showing {filteredCount} of {totalCount} games
-        </p>
+        <div className="flex items-center gap-4">
+          <p className="text-sm text-muted-foreground">
+            Showing {filteredCount} of {totalCount} games
+          </p>
+          
+          {/* Active Filter Badges */}
+          {filtersActive && (
+            <div className="flex items-center gap-2">
+              {selectedConsole !== "all" && (
+                <Badge variant="outline" className="text-xs">
+                  Console: {availableConsoles.find(c => c.value === selectedConsole)?.label || selectedConsole}
+                </Badge>
+              )}
+              {selectedMediaFilter !== "all" && (
+                <Badge variant="outline" className="text-xs">
+                  {MEDIA_FILTER_OPTIONS.find(f => f.key === selectedMediaFilter)?.label}
+                </Badge>
+              )}
+              {searchQuery && (
+                <Badge variant="outline" className="text-xs">
+                  Search: &ldquo;{searchQuery}&rdquo;
+                </Badge>
+              )}
+            </div>
+          )}
+        </div>
 
         {hasNoResults && (
           <Badge

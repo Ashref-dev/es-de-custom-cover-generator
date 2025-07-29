@@ -8,6 +8,7 @@ import { Eye, ImageOff } from "lucide-react";
 import { CONSOLES } from "@/lib/constants";
 import { Game } from "@/types";
 import Image from "next/image";
+import { MediaStatusBadge } from "./MediaStatusBadge";
 
 interface GameCardProps {
   game: Game;
@@ -138,9 +139,6 @@ export default function GameCard({ game, onView }: GameCardProps) {
   const consoleLabel =
     CONSOLES.find((c) => c.value === game.console)?.label || game.console;
 
-  // Count media types available, excluding video
-  const mediaCount = game.mediaTypes.filter((type) => type !== "videos").length;
-
   return (
     <Card className="group relative p-0 gap-0 overflow-hidden border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30 rounded-xl">
       {/* Background Image Container - 4:3 aspect ratio */}
@@ -184,13 +182,12 @@ export default function GameCard({ game, onView }: GameCardProps) {
             {consoleLabel}
           </Badge>
 
-          {/* Media Type Count - Right */}
-          <Badge
-            variant="secondary"
+          {/* Media Status Badge - Right */}
+          <MediaStatusBadge
+            mediaStatus={game.mediaStatus}
+            variant="compact"
             className="backdrop-blur-md bg-white/10 text-white text-xs"
-          >
-            {mediaCount} media type{mediaCount !== 1 ? "s" : ""}
-          </Badge>
+          />
         </div>
 
         {/* Video Badge - If present */}

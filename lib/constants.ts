@@ -170,3 +170,69 @@ export const CONSOLES: ConsoleOption[] = [
   { value: "xboxone", label: "Xbox One" },
   { value: "zxspectrum", label: "ZX Spectrum" },
 ];
+
+/**
+ * Media filter options for filtering games by missing media types
+ */
+export const MEDIA_FILTER_OPTIONS = [
+  {
+    key: "all",
+    label: "All Games",
+    description: "Show all games regardless of media status",
+  },
+  {
+    key: "missing-covers",
+    label: "Missing Covers",
+    description: "Show games that don't have cover images",
+  },
+  {
+    key: "missing-marquees",
+    label: "Missing Marquees/Logos",
+    description: "Show games that don't have marquee/logo images",
+  },
+  {
+    key: "missing-screenshots",
+    label: "Missing Screenshots",
+    description: "Show games that don't have screenshot images",
+  },
+  {
+    key: "missing-titlescreens",
+    label: "Missing Title Screens",
+    description: "Show games that don't have title screen images",
+  },
+  {
+    key: "missing-3dboxes",
+    label: "Missing 3D Boxes",
+    description: "Show games that don't have 3D box images",
+  },
+  {
+    key: "missing-backcovers",
+    label: "Missing Back Covers",
+    description: "Show games that don't have back cover images",
+  },
+  {
+    key: "missing-fanart",
+    label: "Missing Fan Art",
+    description: "Show games that don't have fan art images",
+  },
+  {
+    key: "missing-physicalmedia",
+    label: "Missing Physical Media",
+    description: "Show games that don't have physical media images",
+  },
+  {
+    key: "missing-videos",
+    label: "Missing Videos",
+    description: "Show games that don't have video files",
+  },
+  {
+    key: "missing-any",
+    label: "Missing Any Media",
+    description: "Show games that are missing at least one media type",
+  },
+  {
+    key: "complete",
+    label: "Complete Media Sets",
+    description: "Show games that have all media types available",
+  },
+];

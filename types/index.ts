@@ -39,6 +39,33 @@ export interface NavigationItem {
 }
 
 /**
+ * Media status tracking for all supported media types
+ */
+export interface MediaStatus {
+  covers: boolean;
+  marquees: boolean;
+  screenshots: boolean;
+  titlescreens: boolean;
+  "3dboxes": boolean;
+  backcovers: boolean;
+  fanart: boolean;
+  physicalmedia: boolean;
+  videos: boolean;
+}
+
+/**
+ * Media filter options for filtering games by missing media types
+ */
+export interface MediaFilterOption {
+  /** Unique key for the filter */
+  key: string;
+  /** Display label */
+  label: string;
+  /** Description of what this filter shows */
+  description: string;
+}
+
+/**
  * Game data from ESDE media folder
  */
 export interface Game {
@@ -56,6 +83,8 @@ export interface Game {
   hasVideo: boolean;
   /** List of available media types */
   mediaTypes: string[];
+  /** Comprehensive media status tracking */
+  mediaStatus: MediaStatus;
 
   // File Handles (using any for simplicity with File System API)
   coverFileHandle?: any;
