@@ -10,11 +10,25 @@ import {
   AlertTriangle,
   HelpCircle,
   RefreshCw,
+  CheckCircle,
+  Video,
+  ImageIcon,
+  Monitor,
+  FileImage,
+  Camera,
+  Package,
+  Palette,
+  Disc,
+  Play,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import GameCard from "./GameCard";
 import { GameDetailsDrawer } from "./GameDetailsDrawer";
 import { GameFilters } from "./GameFilters";
+import { QuickFilterPills, QuickFilter } from "./QuickFilterPills";
+import { ViewControls, ViewMode, SortOption, SortDirection } from "./ViewControls";
+import { GameListView } from "./GameListView";
+import { GameCompactView } from "./GameCompactView";
 import { Game, ConsoleOption } from "@/types";
 import {
   openMediaFolder,
@@ -54,6 +68,12 @@ export default function GameBrowser() {
   const [selectedConsole, setSelectedConsole] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedMediaFilter, setSelectedMediaFilter] = useState<string>("all");
+  
+  // State for view mode and sorting
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [sortBy, setSortBy] = useState<SortOption>("name");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [quickFilters, setQuickFilters] = useState<string[]>([]);
 
   // State for games data
   const [games, setGames] = useState<Game[]>([]);
@@ -86,6 +106,234 @@ export default function GameBrowser() {
       .filter((c): c is ConsoleOption => c !== undefined)
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [games]);
+
+  // Quick filter configuration with dynamic counts
+  const availableQuickFilters = useMemo<QuickFilter[]>(() => {
+    const missingAnyCount = games.filter(game => 
+      Object.values(game.mediaStatus).some(status => !status)
+    ).length;
+    
+    const completeCount = games.filter(game => 
+      Object.values(game.mediaStatus).every(status => status)
+    ).length;
+    
+    const hasVideoCount = games.filter(game => game.mediaStatus.videos).length;
+    const missingVideoCount = games.filter(game => !game.mediaStatus.videos).length;
+    
+    const missingCoversCount = games.filter(game => !game.mediaStatus.covers).length;
+    const missingMarqueesCount = games.filter(game => !game.mediaStatus.marquees).length;
+    const missingScreenshotsCount = games.filter(game => !game.mediaStatus.screenshots).length;
+    const missingTitlescreensCount = games.filter(game => !game.mediaStatus.titlescreens).length;
+    const missing3dBoxesCount = games.filter(game => !game.mediaStatus["3dboxes"]).length;
+    const missingBackcoversCount = games.filter(game => !game.mediaStatus.backcovers).length;
+    const missingFanartCount = games.filter(game => !game.mediaStatus.fanart).length;
+    const missingPhysicalmediaCount = games.filter(game => !game.mediaStatus.physicalmedia).length;
+
+    return [
+      {
+        key: "missing-any",
+        label: "Missing Media",
+        icon: ({ className }) => <AlertCircle className={className} />,
+        description: "Games missing at least one media type",
+        count: missingAnyCount,
+      },
+      {
+        key: "complete",
+        label: "Complete",
+        icon: ({ className }) => <CheckCircle className={className} />,
+        description: "Games with all media types",
+        count: completeCount,
+      },
+      {
+        key: "has-videos",
+        label: "Has Videos",
+        icon: ({ className }) => <Video className={className} />,
+        description: "Games with video files",
+        count: hasVideoCount,
+      },
+      {
+        key: "missing-videos",
+        label: "No Videos",
+        icon: ({ className }) => <Play className={className} />,
+        description: "Games without video files",
+        count: missingVideoCount,
+      },
+      {
+        key: "missing-covers",
+        label: "No Covers",
+        icon: ({ className }) => <ImageIcon className={className} />,
+        description: "Games missing cover images",
+        count: missingCoversCount,
+      },
+      {
+        key: "missing-marquees",
+        label: "No Marquees",
+        icon: ({ className }) => <FileImage className={className} />,
+        description: "Games missing marquee/logo images",
+        count: missingMarqueesCount,
+      },
+      {
+        key: "missing-screenshots",
+        label: "No Screenshots",
+        icon: ({ className }) => <Camera className={className} />,
+        description: "Games missing screenshot images",
+        count: missingScreenshotsCount,
+      },
+      {
+        key: "missing-titlescreens",
+        label: "No Title Screens",
+        icon: ({ className }) => <Monitor className={className} />,
+        description: "Games missing title screen images",
+        count: missingTitlescreensCount,
+      },
+      {
+        key: "missing-3dboxes",
+        label: "No 3D Boxes",
+        icon: ({ className }) => <Package className={className} />,
+        description: "Games missing 3D box images",
+        count: missing3dBoxesCount,
+      },
+      {
+        key: "missing-backcovers",
+        label: "No Back Covers",
+        icon: ({ className }) => <FileImage className={className} />,
+        description: "Games missing back cover images",
+        count: missingBackcoversCount,
+      },
+      {
+        key: "missing-fanart",
+        label: "No Fan Art",
+        icon: ({ className }) => <Palette className={className} />,
+        description: "Games missing fan art images",
+        count: missingFanartCount,
+      },
+      {
+        key: "missing-physicalmedia",
+        label: "No Physical Media",
+        icon: ({ className }) => <Disc className={className} />,
+        description: "Games missing physical media images",
+        count: missingPhysicalmediaCount,
+      },
+    ].filter(filter => filter.count > 0); // Only show filters that have results
+  }, [games]);
+
+  // Sorting and filtering logic
+  const sortedAndFilteredGames = useMemo(() => {
+    const filtered = games.filter((game) => {
+      const matchesConsole =
+        selectedConsole === "all" || game.console === selectedConsole;
+      const matchesSearch =
+        searchQuery === "" ||
+        game.name.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Media filter logic
+      let matchesMediaFilter = true;
+      if (selectedMediaFilter !== "all") {
+        switch (selectedMediaFilter) {
+          case "missing-covers":
+            matchesMediaFilter = !game.mediaStatus.covers;
+            break;
+          case "missing-marquees":
+            matchesMediaFilter = !game.mediaStatus.marquees;
+            break;
+          case "missing-screenshots":
+            matchesMediaFilter = !game.mediaStatus.screenshots;
+            break;
+          case "missing-titlescreens":
+            matchesMediaFilter = !game.mediaStatus.titlescreens;
+            break;
+          case "missing-3dboxes":
+            matchesMediaFilter = !game.mediaStatus["3dboxes"];
+            break;
+          case "missing-backcovers":
+            matchesMediaFilter = !game.mediaStatus.backcovers;
+            break;
+          case "missing-fanart":
+            matchesMediaFilter = !game.mediaStatus.fanart;
+            break;
+          case "missing-physicalmedia":
+            matchesMediaFilter = !game.mediaStatus.physicalmedia;
+            break;
+          case "missing-videos":
+            matchesMediaFilter = !game.mediaStatus.videos;
+            break;
+          case "missing-any":
+            matchesMediaFilter = Object.values(game.mediaStatus).some(status => !status);
+            break;
+          case "complete":
+            matchesMediaFilter = Object.values(game.mediaStatus).every(status => status);
+            break;
+          default:
+            matchesMediaFilter = true;
+        }
+      }
+      
+      // Quick filter logic
+      let matchesQuickFilters = true;
+      if (quickFilters.length > 0) {
+        matchesQuickFilters = quickFilters.every(filter => {
+          switch (filter) {
+            case "missing-any":
+              return Object.values(game.mediaStatus).some(status => !status);
+            case "complete":
+              return Object.values(game.mediaStatus).every(status => status);
+            case "has-videos":
+              return game.mediaStatus.videos;
+            case "missing-videos":
+              return !game.mediaStatus.videos;
+            case "missing-covers":
+              return !game.mediaStatus.covers;
+            case "missing-marquees":
+              return !game.mediaStatus.marquees;
+            case "missing-screenshots":
+              return !game.mediaStatus.screenshots;
+            case "missing-titlescreens":
+              return !game.mediaStatus.titlescreens;
+            case "missing-3dboxes":
+              return !game.mediaStatus["3dboxes"];
+            case "missing-backcovers":
+              return !game.mediaStatus.backcovers;
+            case "missing-fanart":
+              return !game.mediaStatus.fanart;
+            case "missing-physicalmedia":
+              return !game.mediaStatus.physicalmedia;
+            default:
+              return true;
+          }
+        });
+      }
+      
+      return matchesConsole && matchesSearch && matchesMediaFilter && matchesQuickFilters;
+    });
+
+    // Sort the filtered results
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case "name":
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case "console":
+          const consoleA = CONSOLES.find(c => c.value === a.console)?.label || a.console;
+          const consoleB = CONSOLES.find(c => c.value === b.console)?.label || b.console;
+          comparison = consoleA.localeCompare(consoleB);
+          break;
+        case "completion":
+          const completionA = Object.values(a.mediaStatus).filter(Boolean).length;
+          const completionB = Object.values(b.mediaStatus).filter(Boolean).length;
+          comparison = completionA - completionB;
+          break;
+        case "mediaCount":
+          comparison = a.mediaTypes.length - b.mediaTypes.length;
+          break;
+      }
+      
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+
+    return filtered;
+  }, [games, selectedConsole, searchQuery, selectedMediaFilter, quickFilters, sortBy, sortDirection]);
 
   // Scan the downloaded_media folder
   const handleScanMediaFolder = async (readWrite = false) => {
@@ -183,6 +431,29 @@ export default function GameBrowser() {
     setSearchQuery("");
     setSelectedConsole("all");
     setSelectedMediaFilter("all");
+    setQuickFilters([]);
+    setSortBy("name");
+    setSortDirection("asc");
+  };
+
+  // Handlers for new UX features
+  const handleQuickFilterToggle = (filter: string) => {
+    setQuickFilters(prev => {
+      if (prev.includes(filter)) {
+        return prev.filter(f => f !== filter);
+      } else {
+        return [...prev, filter];
+      }
+    });
+  };
+
+  const handleViewModeChange = (mode: "grid" | "list" | "compact") => {
+    setViewMode(mode);
+  };
+
+  const handleSortChange = (field: SortOption, direction: "asc" | "desc") => {
+    setSortBy(field);
+    setSortDirection(direction);
   };
 
   // Handlers for game actions
@@ -316,15 +587,43 @@ export default function GameBrowser() {
         />
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-        {filteredGames.map((game) => (
-          <GameCard
-            key={game.id}
-            game={game}
-            onView={() => handleViewGame(game)}
-          />
-        ))}
-      </div>
+      {/* Quick Filter Pills */}
+      <QuickFilterPills
+        availableFilters={availableQuickFilters}
+        activeFilters={quickFilters}
+        onFilterToggle={handleQuickFilterToggle}
+      />
+
+      {/* View Controls */}
+      <ViewControls
+        viewMode={viewMode}
+        onViewModeChange={handleViewModeChange}
+        sortBy={sortBy}
+        sortDirection={sortDirection}
+        onSortChange={handleSortChange}
+      />
+
+      {/* Games Display */}
+      {viewMode === "grid" && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          {sortedAndFilteredGames.map((game) => (
+            <GameCard
+              key={game.id}
+              game={game}
+              onView={() => handleViewGame(game)}
+            />
+          ))}
+        </div>
+      )}
+
+      {viewMode === "list" && (
+        <GameListView
+          games={sortedAndFilteredGames}
+          onViewGame={handleViewGame}
+        />
+      )}
+
+    
 
       {games.length === 0 && !loading && (
         <div className="flex flex-col items-center justify-center py-20 px-4 text-center">

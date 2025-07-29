@@ -236,3 +236,69 @@ export const MEDIA_FILTER_OPTIONS = [
     description: "Show games that have all media types available",
   },
 ];
+
+/**
+ * Quick filter options for one-click filtering shortcuts
+ */
+export const QUICK_FILTER_OPTIONS = [
+  {
+    key: "missing-any",
+    label: "Missing Media",
+    description: "Games missing at least one media type",
+  },
+  {
+    key: "complete",
+    label: "Complete",
+    description: "Games with all media types",
+  },
+  {
+    key: "has-videos",
+    label: "Has Videos",
+    description: "Games with video files",
+  },
+  {
+    key: "missing-videos",
+    label: "No Videos",
+    description: "Games without video files",
+  },
+  {
+    key: "missing-covers",
+    label: "No Covers",
+    description: "Games without cover images",
+  },
+  {
+    key: "missing-marquees",
+    label: "No Marquees",
+    description: "Games without marquee/logo images",
+  },
+  {
+    key: "missing-screenshots",
+    label: "No Screenshots",
+    description: "Games without screenshot images",
+  },
+  {
+    key: "missing-titlescreens",
+    label: "No Title Screens",
+    description: "Games without title screen images",
+  },
+  {
+    key: "missing-3dboxes",
+    label: "No 3D Boxes",
+    description: "Games without 3D box images",
+  },
+  {
+    key: "missing-backcovers",
+    label: "No Back Covers",
+    description: "Games without back cover images",
+  },
+  {
+    key: "missing-fanart",
+    label: "No Fan Art",
+    description: "Games without fan art images",
+  },
+  {
+    key: "missing-physicalmedia",
+    label: "No Physical Media",
+    description: "Games without physical media images",
+  },
+];
