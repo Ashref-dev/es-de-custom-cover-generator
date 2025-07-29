@@ -53,21 +53,21 @@ export function QuickFilterPills({
         size="sm"
         onClick={() => onFilterToggle(filter.key)}
         className={cn(
-          "h-8 gap-1.5 transition-all duration-200 flex-shrink-0",
+          "h-9 gap-2 transition-all duration-200 flex-shrink-0 relative",
           isActive
-            ? "bg-primary text-primary-foreground shadow-sm"
-            : "hover:bg-muted/80"
+            ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
+            : "hover:bg-muted/80 hover:border-primary/30"
         )}
       >
-        <IconComponent className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline whitespace-nowrap">{filter.label}</span>
+        <IconComponent className="h-4 w-4" />
+        <span className="hidden sm:inline whitespace-nowrap font-medium">{filter.label}</span>
         {filter.count !== undefined && (
           <Badge
             variant={isActive ? "secondary" : "outline"}
             className={cn(
-              "ml-1 h-5 px-1.5 text-xs",
+              "ml-1 h-5 px-2 text-xs font-semibold",
               isActive
-                ? "bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30"
+                ? "bg-primary-foreground/15 text-primary-foreground border-primary-foreground/20"
                 : "bg-muted text-muted-foreground border-border"
             )}
           >
@@ -75,18 +75,18 @@ export function QuickFilterPills({
           </Badge>
         )}
         {isActive && (
-          <X className="h-3 w-3 ml-1 opacity-70" />
+          <X className="h-3.5 w-3.5 ml-1 opacity-60 hover:opacity-100 transition-opacity" />
         )}
       </Button>
     );
   };
 
   return (
-    <div className={cn("space-y-3", className)}>
+    <div className={cn("space-y-4", className)}>
       {/* Header */}
-      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Filter className="h-4 w-4" />
-        <span className="hidden sm:inline">Quick filters:</span>
+        <span className="font-medium">Quick Filters</span>
       </div>
       
       {/* Core Filters */}
@@ -98,9 +98,9 @@ export function QuickFilterPills({
       
       {/* Media Type Filters */}
       {mediaFilters.length > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {coreFilters.length > 0 && (
-            <div className="text-xs text-muted-foreground font-medium">
+            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
               Missing Media Types
             </div>
           )}

@@ -1,7 +1,7 @@
-"use client";
-import { useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { CONSOLES } from "@/lib/constants";
+'use client';
+import { useState, useMemo } from 'react';
+import { Button } from '@/components/ui/button';
+import { CONSOLES } from '@/lib/constants';
 import {
   FolderOpen,
   Loader2,
@@ -20,21 +20,25 @@ import {
   Palette,
   Disc,
   Play,
-} from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import GameCard from "./GameCard";
-import { GameDetailsDrawer } from "./GameDetailsDrawer";
-import { GameFilters } from "./GameFilters";
-import { QuickFilterPills, QuickFilter } from "./QuickFilterPills";
-import { ViewControls, ViewMode, SortOption, SortDirection } from "./ViewControls";
-import { GameListView } from "./GameListView";
-import { GameCompactView } from "./GameCompactView";
-import { Game, ConsoleOption } from "@/types";
+} from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import GameCard from './GameCard';
+import { GameDetailsDrawer } from './GameDetailsDrawer';
+import { GameFilters } from './GameFilters';
+import { QuickFilterPills, QuickFilter } from './QuickFilterPills';
+import {
+  ViewControls,
+  ViewMode,
+  SortOption,
+  SortDirection,
+} from './ViewControls';
+import { GameListView } from './GameListView';
+import { Game, ConsoleOption } from '@/types';
 import {
   openMediaFolder,
   scanMediaFolder,
   deleteGameMedia,
-} from "@/lib/filesystem";
+} from '@/lib/filesystem';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,7 +48,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 import {
   Dialog,
   DialogContent,
@@ -52,8 +56,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 
 // Define a type for the directory handle, even if it's basic
 // This avoids using 'any' directly in the state
@@ -65,14 +69,14 @@ type DirectoryHandle = object; // Or a more specific type if possible
  */
 export default function GameBrowser() {
   // State for selected console filter
-  const [selectedConsole, setSelectedConsole] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [selectedMediaFilter, setSelectedMediaFilter] = useState<string>("all");
-  
+  const [selectedConsole, setSelectedConsole] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedMediaFilter, setSelectedMediaFilter] = useState<string>('all');
+
   // State for view mode and sorting
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [sortBy, setSortBy] = useState<SortOption>("name");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [sortBy, setSortBy] = useState<SortOption>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [quickFilters, setQuickFilters] = useState<string[]>([]);
 
   // State for games data
@@ -109,231 +113,266 @@ export default function GameBrowser() {
 
   // Quick filter configuration with dynamic counts
   const availableQuickFilters = useMemo<QuickFilter[]>(() => {
-    const missingAnyCount = games.filter(game => 
-      Object.values(game.mediaStatus).some(status => !status)
+    const missingAnyCount = games.filter((game) =>
+      Object.values(game.mediaStatus).some((status) => !status)
     ).length;
-    
-    const completeCount = games.filter(game => 
-      Object.values(game.mediaStatus).every(status => status)
+
+    const completeCount = games.filter((game) =>
+      Object.values(game.mediaStatus).every((status) => status)
     ).length;
-    
-    const hasVideoCount = games.filter(game => game.mediaStatus.videos).length;
-    const missingVideoCount = games.filter(game => !game.mediaStatus.videos).length;
-    
-    const missingCoversCount = games.filter(game => !game.mediaStatus.covers).length;
-    const missingMarqueesCount = games.filter(game => !game.mediaStatus.marquees).length;
-    const missingScreenshotsCount = games.filter(game => !game.mediaStatus.screenshots).length;
-    const missingTitlescreensCount = games.filter(game => !game.mediaStatus.titlescreens).length;
-    const missing3dBoxesCount = games.filter(game => !game.mediaStatus["3dboxes"]).length;
-    const missingBackcoversCount = games.filter(game => !game.mediaStatus.backcovers).length;
-    const missingFanartCount = games.filter(game => !game.mediaStatus.fanart).length;
-    const missingPhysicalmediaCount = games.filter(game => !game.mediaStatus.physicalmedia).length;
+
+    const hasVideoCount = games.filter(
+      (game) => game.mediaStatus.videos
+    ).length;
+    const missingVideoCount = games.filter(
+      (game) => !game.mediaStatus.videos
+    ).length;
+
+    const missingCoversCount = games.filter(
+      (game) => !game.mediaStatus.covers
+    ).length;
+    const missingMarqueesCount = games.filter(
+      (game) => !game.mediaStatus.marquees
+    ).length;
+    const missingScreenshotsCount = games.filter(
+      (game) => !game.mediaStatus.screenshots
+    ).length;
+    const missingTitlescreensCount = games.filter(
+      (game) => !game.mediaStatus.titlescreens
+    ).length;
+    const missing3dBoxesCount = games.filter(
+      (game) => !game.mediaStatus['3dboxes']
+    ).length;
+    const missingBackcoversCount = games.filter(
+      (game) => !game.mediaStatus.backcovers
+    ).length;
+    const missingFanartCount = games.filter(
+      (game) => !game.mediaStatus.fanart
+    ).length;
+    const missingPhysicalmediaCount = games.filter(
+      (game) => !game.mediaStatus.physicalmedia
+    ).length;
 
     return [
       {
-        key: "missing-any",
-        label: "Missing Media",
+        key: 'missing-any',
+        label: 'Missing Media',
         icon: ({ className }) => <AlertCircle className={className} />,
-        description: "Games missing at least one media type",
+        description: 'Games missing at least one media type',
         count: missingAnyCount,
       },
       {
-        key: "complete",
-        label: "Complete",
+        key: 'complete',
+        label: 'Complete',
         icon: ({ className }) => <CheckCircle className={className} />,
-        description: "Games with all media types",
+        description: 'Games with all media types',
         count: completeCount,
       },
       {
-        key: "has-videos",
-        label: "Has Videos",
+        key: 'has-videos',
+        label: 'Has Videos',
         icon: ({ className }) => <Video className={className} />,
-        description: "Games with video files",
+        description: 'Games with video files',
         count: hasVideoCount,
       },
       {
-        key: "missing-videos",
-        label: "No Videos",
+        key: 'missing-videos',
+        label: 'No Videos',
         icon: ({ className }) => <Play className={className} />,
-        description: "Games without video files",
+        description: 'Games without video files',
         count: missingVideoCount,
       },
       {
-        key: "missing-covers",
-        label: "No Covers",
+        key: 'missing-covers',
+        label: 'No Covers',
         icon: ({ className }) => <ImageIcon className={className} />,
-        description: "Games missing cover images",
+        description: 'Games missing cover images',
         count: missingCoversCount,
       },
       {
-        key: "missing-marquees",
-        label: "No Marquees",
+        key: 'missing-marquees',
+        label: 'No Marquees',
         icon: ({ className }) => <FileImage className={className} />,
-        description: "Games missing marquee/logo images",
+        description: 'Games missing marquee/logo images',
         count: missingMarqueesCount,
       },
       {
-        key: "missing-screenshots",
-        label: "No Screenshots",
+        key: 'missing-screenshots',
+        label: 'No Screenshots',
         icon: ({ className }) => <Camera className={className} />,
-        description: "Games missing screenshot images",
+        description: 'Games missing screenshot images',
         count: missingScreenshotsCount,
       },
       {
-        key: "missing-titlescreens",
-        label: "No Title Screens",
+        key: 'missing-titlescreens',
+        label: 'No Title Screens',
         icon: ({ className }) => <Monitor className={className} />,
-        description: "Games missing title screen images",
+        description: 'Games missing title screen images',
         count: missingTitlescreensCount,
       },
       {
-        key: "missing-3dboxes",
-        label: "No 3D Boxes",
+        key: 'missing-3dboxes',
+        label: 'No 3D Boxes',
         icon: ({ className }) => <Package className={className} />,
-        description: "Games missing 3D box images",
+        description: 'Games missing 3D box images',
         count: missing3dBoxesCount,
       },
       {
-        key: "missing-backcovers",
-        label: "No Back Covers",
+        key: 'missing-backcovers',
+        label: 'No Back Covers',
         icon: ({ className }) => <FileImage className={className} />,
-        description: "Games missing back cover images",
+        description: 'Games missing back cover images',
         count: missingBackcoversCount,
       },
       {
-        key: "missing-fanart",
-        label: "No Fan Art",
+        key: 'missing-fanart',
+        label: 'No Fan Art',
         icon: ({ className }) => <Palette className={className} />,
-        description: "Games missing fan art images",
+        description: 'Games missing fan art images',
         count: missingFanartCount,
       },
       {
-        key: "missing-physicalmedia",
-        label: "No Physical Media",
+        key: 'missing-physicalmedia',
+        label: 'No Physical Media',
         icon: ({ className }) => <Disc className={className} />,
-        description: "Games missing physical media images",
+        description: 'Games missing physical media images',
         count: missingPhysicalmediaCount,
       },
-    ].filter(filter => filter.count > 0); // Only show filters that have results
+    ].filter((filter) => filter.count > 0); // Only show filters that have results
   }, [games]);
 
   // Sorting and filtering logic
   const sortedAndFilteredGames = useMemo(() => {
     const filtered = games.filter((game) => {
       const matchesConsole =
-        selectedConsole === "all" || game.console === selectedConsole;
+        selectedConsole === 'all' || game.console === selectedConsole;
       const matchesSearch =
-        searchQuery === "" ||
+        searchQuery === '' ||
         game.name.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       // Media filter logic
       let matchesMediaFilter = true;
-      if (selectedMediaFilter !== "all") {
+      if (selectedMediaFilter !== 'all') {
         switch (selectedMediaFilter) {
-          case "missing-covers":
+          case 'missing-covers':
             matchesMediaFilter = !game.mediaStatus.covers;
             break;
-          case "missing-marquees":
+          case 'missing-marquees':
             matchesMediaFilter = !game.mediaStatus.marquees;
             break;
-          case "missing-screenshots":
+          case 'missing-screenshots':
             matchesMediaFilter = !game.mediaStatus.screenshots;
             break;
-          case "missing-titlescreens":
+          case 'missing-titlescreens':
             matchesMediaFilter = !game.mediaStatus.titlescreens;
             break;
-          case "missing-3dboxes":
-            matchesMediaFilter = !game.mediaStatus["3dboxes"];
+          case 'missing-3dboxes':
+            matchesMediaFilter = !game.mediaStatus['3dboxes'];
             break;
-          case "missing-backcovers":
+          case 'missing-backcovers':
             matchesMediaFilter = !game.mediaStatus.backcovers;
             break;
-          case "missing-fanart":
+          case 'missing-fanart':
             matchesMediaFilter = !game.mediaStatus.fanart;
             break;
-          case "missing-physicalmedia":
+          case 'missing-physicalmedia':
             matchesMediaFilter = !game.mediaStatus.physicalmedia;
             break;
-          case "missing-videos":
+          case 'missing-videos':
             matchesMediaFilter = !game.mediaStatus.videos;
             break;
-          case "missing-any":
-            matchesMediaFilter = Object.values(game.mediaStatus).some(status => !status);
+          case 'missing-any':
+            matchesMediaFilter = Object.values(game.mediaStatus).some(
+              (status) => !status
+            );
             break;
-          case "complete":
-            matchesMediaFilter = Object.values(game.mediaStatus).every(status => status);
+          case 'complete':
+            matchesMediaFilter = Object.values(game.mediaStatus).every(
+              (status) => status
+            );
             break;
           default:
             matchesMediaFilter = true;
         }
       }
-      
+
       // Quick filter logic
       let matchesQuickFilters = true;
       if (quickFilters.length > 0) {
-        matchesQuickFilters = quickFilters.every(filter => {
+        matchesQuickFilters = quickFilters.every((filter) => {
           switch (filter) {
-            case "missing-any":
-              return Object.values(game.mediaStatus).some(status => !status);
-            case "complete":
-              return Object.values(game.mediaStatus).every(status => status);
-            case "has-videos":
+            case 'missing-any':
+              return Object.values(game.mediaStatus).some((status) => !status);
+            case 'complete':
+              return Object.values(game.mediaStatus).every((status) => status);
+            case 'has-videos':
               return game.mediaStatus.videos;
-            case "missing-videos":
+            case 'missing-videos':
               return !game.mediaStatus.videos;
-            case "missing-covers":
+            case 'missing-covers':
               return !game.mediaStatus.covers;
-            case "missing-marquees":
+            case 'missing-marquees':
               return !game.mediaStatus.marquees;
-            case "missing-screenshots":
+            case 'missing-screenshots':
               return !game.mediaStatus.screenshots;
-            case "missing-titlescreens":
+            case 'missing-titlescreens':
               return !game.mediaStatus.titlescreens;
-            case "missing-3dboxes":
-              return !game.mediaStatus["3dboxes"];
-            case "missing-backcovers":
+            case 'missing-3dboxes':
+              return !game.mediaStatus['3dboxes'];
+            case 'missing-backcovers':
               return !game.mediaStatus.backcovers;
-            case "missing-fanart":
+            case 'missing-fanart':
               return !game.mediaStatus.fanart;
-            case "missing-physicalmedia":
+            case 'missing-physicalmedia':
               return !game.mediaStatus.physicalmedia;
             default:
               return true;
           }
         });
       }
-      
-      return matchesConsole && matchesSearch && matchesMediaFilter && matchesQuickFilters;
+
+      return (
+        matchesConsole &&
+        matchesSearch &&
+        matchesMediaFilter &&
+        matchesQuickFilters
+      );
     });
 
     // Sort the filtered results
     filtered.sort((a, b) => {
       let comparison = 0;
-      
+
       switch (sortBy) {
-        case "name":
+        case 'name':
           comparison = a.name.localeCompare(b.name);
           break;
-        case "console":
-          const consoleA = CONSOLES.find(c => c.value === a.console)?.label || a.console;
-          const consoleB = CONSOLES.find(c => c.value === b.console)?.label || b.console;
+        case 'console':
+          const consoleA =
+            CONSOLES.find((c) => c.value === a.console)?.label || a.console;
+          const consoleB =
+            CONSOLES.find((c) => c.value === b.console)?.label || b.console;
           comparison = consoleA.localeCompare(consoleB);
           break;
-        case "completion":
-          const completionA = Object.values(a.mediaStatus).filter(Boolean).length;
-          const completionB = Object.values(b.mediaStatus).filter(Boolean).length;
-          comparison = completionA - completionB;
-          break;
-        case "mediaCount":
+
+        case 'mediaCount':
           comparison = a.mediaTypes.length - b.mediaTypes.length;
           break;
       }
-      
-      return sortDirection === "asc" ? comparison : -comparison;
+
+      return sortDirection === 'asc' ? comparison : -comparison;
     });
 
     return filtered;
-  }, [games, selectedConsole, searchQuery, selectedMediaFilter, quickFilters, sortBy, sortDirection]);
+  }, [
+    games,
+    selectedConsole,
+    searchQuery,
+    selectedMediaFilter,
+    quickFilters,
+    sortBy,
+    sortDirection,
+  ]);
 
   // Scan the downloaded_media folder
   const handleScanMediaFolder = async (readWrite = false) => {
@@ -346,9 +385,10 @@ export default function GameBrowser() {
     setMainDirHandle(null);
     setSelectedGame(null);
     setIsDrawerOpen(false);
-      setSearchQuery("");
-      setSelectedConsole("all");
-      setSelectedMediaFilter("all");    try {
+    setSearchQuery('');
+    setSelectedConsole('all');
+    setSelectedMediaFilter('all');
+    try {
       // Open the media folder using the file system access API
       const dirHandle = await openMediaFolder(readWrite);
       setMainDirHandle(dirHandle);
@@ -359,13 +399,13 @@ export default function GameBrowser() {
 
       if (foundGames.length === 0) {
         setError(
-          "No games found in the selected folder. Make sure you selected the correct ES-DE/downloaded_media directory."
+          'No games found in the selected folder. Make sure you selected the correct ES-DE/downloaded_media directory.'
         );
       }
     } catch (err) {
-      console.error("Error scanning media folder:", err);
+      console.error('Error scanning media folder:', err);
       setError(
-        err instanceof Error ? err.message : "Failed to scan media folder."
+        err instanceof Error ? err.message : 'Failed to scan media folder.'
       );
       setMainDirHandle(null);
     } finally {
@@ -376,82 +416,86 @@ export default function GameBrowser() {
   // Filter games based on selected console, search query, and media filter
   const filteredGames = games.filter((game) => {
     const matchesConsole =
-      selectedConsole === "all" || game.console === selectedConsole;
+      selectedConsole === 'all' || game.console === selectedConsole;
     const matchesSearch =
-      searchQuery === "" ||
+      searchQuery === '' ||
       game.name.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     // Media filter logic
     let matchesMediaFilter = true;
-    if (selectedMediaFilter !== "all") {
+    if (selectedMediaFilter !== 'all') {
       switch (selectedMediaFilter) {
-        case "missing-covers":
+        case 'missing-covers':
           matchesMediaFilter = !game.mediaStatus.covers;
           break;
-        case "missing-marquees":
+        case 'missing-marquees':
           matchesMediaFilter = !game.mediaStatus.marquees;
           break;
-        case "missing-screenshots":
+        case 'missing-screenshots':
           matchesMediaFilter = !game.mediaStatus.screenshots;
           break;
-        case "missing-titlescreens":
+        case 'missing-titlescreens':
           matchesMediaFilter = !game.mediaStatus.titlescreens;
           break;
-        case "missing-3dboxes":
-          matchesMediaFilter = !game.mediaStatus["3dboxes"];
+        case 'missing-3dboxes':
+          matchesMediaFilter = !game.mediaStatus['3dboxes'];
           break;
-        case "missing-backcovers":
+        case 'missing-backcovers':
           matchesMediaFilter = !game.mediaStatus.backcovers;
           break;
-        case "missing-fanart":
+        case 'missing-fanart':
           matchesMediaFilter = !game.mediaStatus.fanart;
           break;
-        case "missing-physicalmedia":
+        case 'missing-physicalmedia':
           matchesMediaFilter = !game.mediaStatus.physicalmedia;
           break;
-        case "missing-videos":
+        case 'missing-videos':
           matchesMediaFilter = !game.mediaStatus.videos;
           break;
-        case "missing-any":
-          matchesMediaFilter = Object.values(game.mediaStatus).some(status => !status);
+        case 'missing-any':
+          matchesMediaFilter = Object.values(game.mediaStatus).some(
+            (status) => !status
+          );
           break;
-        case "complete":
-          matchesMediaFilter = Object.values(game.mediaStatus).every(status => status);
+        case 'complete':
+          matchesMediaFilter = Object.values(game.mediaStatus).every(
+            (status) => status
+          );
           break;
         default:
           matchesMediaFilter = true;
       }
     }
-    
+
     return matchesConsole && matchesSearch && matchesMediaFilter;
   });
 
   // Reset filters
   const handleResetFilters = () => {
-    setSearchQuery("");
-    setSelectedConsole("all");
-    setSelectedMediaFilter("all");
+    setSearchQuery('');
+    setSelectedConsole('all');
+    setSelectedMediaFilter('all');
     setQuickFilters([]);
-    setSortBy("name");
-    setSortDirection("asc");
+    setSortBy('name');
+    setSortDirection('asc');
   };
 
   // Handlers for new UX features
   const handleQuickFilterToggle = (filter: string) => {
-    setQuickFilters(prev => {
+    setQuickFilters((prev) => {
       if (prev.includes(filter)) {
-        return prev.filter(f => f !== filter);
+        return prev.filter((f) => f !== filter);
       } else {
         return [...prev, filter];
       }
     });
   };
 
-  const handleViewModeChange = (mode: "grid" | "list" | "compact") => {
+  const handleViewModeChange = (mode: 'grid' | 'list') => {
     setViewMode(mode);
   };
 
-  const handleSortChange = (field: SortOption, direction: "asc" | "desc") => {
+  const handleSortChange = (field: SortOption, direction: 'asc' | 'desc') => {
     setSortBy(field);
     setSortDirection(direction);
   };
@@ -482,10 +526,10 @@ export default function GameBrowser() {
       // Request write permissions again if necessary (browser might prompt)
       // Use type assertion here when interacting with the specific API method
       const permissionStatus = await (mainDirHandle as any).requestPermission({
-        mode: "readwrite",
+        mode: 'readwrite',
       });
-      if (permissionStatus !== "granted") {
-        throw new Error("Write permission denied.");
+      if (permissionStatus !== 'granted') {
+        throw new Error('Write permission denied.');
       }
 
       await deleteGameMedia(
@@ -505,9 +549,9 @@ export default function GameBrowser() {
         setSelectedGame(null);
       }
     } catch (err) {
-      console.error("Error deleting game:", err);
+      console.error('Error deleting game:', err);
       setError(
-        err instanceof Error ? err.message : "Failed to delete game media."
+        err instanceof Error ? err.message : 'Failed to delete game media.'
       );
     } finally {
       setIsDeleting(false);
@@ -517,24 +561,24 @@ export default function GameBrowser() {
   };
 
   return (
-    <div className="container min-h-screen p-2 space-y-4 max-w-screen-2xl">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0">
-        <div className="flex flex-col">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight">Media Browser</h1>
+    <div className='container min-h-screen p-2 space-y-4 max-w-screen-2xl'>
+      <div className='flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0'>
+        <div className='flex flex-col'>
+          <div className='flex items-center gap-3'>
+            <h1 className='text-3xl font-bold tracking-tight'>Media Browser</h1>
             {games.length > 0 && (
               <Badge
-                variant="outline"
-                className="px-3 py-1 text-sm border-primary/20 bg-primary/5"
+                variant='outline'
+                className='px-3 py-1 text-sm border-primary/20 bg-primary/5'
               >
-                <span className="font-bold text-primary mr-1.5">
+                <span className='font-bold text-primary mr-1.5'>
                   {games.length}
                 </span>
                 Games
               </Badge>
             )}
           </div>
-          <p className="text-muted-foreground mt-1">
+          <p className='text-muted-foreground mt-1'>
             Browse and manage your ES-DE media files
           </p>
         </div>
@@ -542,31 +586,31 @@ export default function GameBrowser() {
         <Button
           onClick={() => setShowHelpDialog(true)}
           disabled={loading}
-          className="min-w-40 group"
-          size="lg"
+          className='min-w-40 group'
+          size='lg'
         >
           {loading ? (
-            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+            <RefreshCw className='mr-2 h-4 w-4 animate-spin' />
           ) : (
-            <FolderOpen className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+            <FolderOpen className='mr-2 h-5 w-5 group-hover:scale-110 transition-transform' />
           )}
-          {loading ? "Scanning..." : "Scan Media Folder"}
+          {loading ? 'Scanning...' : 'Scan Media Folder'}
         </Button>
       </div>
 
       {error && (
-        <Alert variant="destructive" className="animate-in fade-in-50">
-          <AlertCircle className="h-4 w-4" />
+        <Alert variant='destructive' className='animate-in fade-in-50'>
+          <AlertCircle className='h-4 w-4' />
           <AlertTitle>Error</AlertTitle>
-          <div className="flex items-center justify-between w-full">
+          <div className='flex items-center justify-between w-full'>
             <AlertDescription>{error}</AlertDescription>
             <Button
-              variant="destructive"
-              size="icon"
-              className="h-6 w-6 rounded-full ml-4"
+              variant='destructive'
+              size='icon'
+              className='h-6 w-6 rounded-full ml-4'
               onClick={() => setError(null)}
             >
-              <X className="h-3 w-3" />
+              <X className='h-3 w-3' />
             </Button>
           </div>
         </Alert>
@@ -587,25 +631,30 @@ export default function GameBrowser() {
         />
       )}
 
-      {/* Quick Filter Pills */}
-      <QuickFilterPills
-        availableFilters={availableQuickFilters}
-        activeFilters={quickFilters}
-        onFilterToggle={handleQuickFilterToggle}
-      />
+      {/* Filters and Controls Section */}
+      <div className='space-y-4'>
+        {/* Quick Filter Pills */}
+        <QuickFilterPills
+          availableFilters={availableQuickFilters}
+          activeFilters={quickFilters}
+          onFilterToggle={handleQuickFilterToggle}
+          className='pb-2'
+        />
 
-      {/* View Controls */}
-      <ViewControls
-        viewMode={viewMode}
-        onViewModeChange={handleViewModeChange}
-        sortBy={sortBy}
-        sortDirection={sortDirection}
-        onSortChange={handleSortChange}
-      />
+        {/* View Controls */}
+        <ViewControls
+          viewMode={viewMode}
+          onViewModeChange={handleViewModeChange}
+          sortBy={sortBy}
+          sortDirection={sortDirection}
+          onSortChange={handleSortChange}
+          className='py-2'
+        />
+      </div>
 
       {/* Games Display */}
-      {viewMode === "grid" && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+      {viewMode === 'grid' && (
+        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3'>
           {sortedAndFilteredGames.map((game) => (
             <GameCard
               key={game.id}
@@ -616,47 +665,45 @@ export default function GameBrowser() {
         </div>
       )}
 
-      {viewMode === "list" && (
+      {viewMode === 'list' && (
         <GameListView
           games={sortedAndFilteredGames}
           onViewGame={handleViewGame}
         />
       )}
 
-    
-
       {games.length === 0 && !loading && (
-        <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-          <div className="bg-muted/50 rounded-full p-6 mb-6">
-            <FolderOpen className="h-12 w-12 text-muted-foreground" />
+        <div className='flex flex-col items-center justify-center py-20 px-4 text-center'>
+          <div className='bg-muted/50 rounded-full p-6 mb-6'>
+            <FolderOpen className='h-12 w-12 text-muted-foreground' />
           </div>
-          <h3 className="text-xl font-semibold mb-3">No Media Library Found</h3>
-          <p className="text-muted-foreground max-w-md mb-8">
+          <h3 className='text-xl font-semibold mb-3'>No Media Library Found</h3>
+          <p className='text-muted-foreground max-w-md mb-8'>
             Click the &quot;Scan Media Folder&quot; button to select and scan
             your ES-DE downloaded_media folder.
           </p>
           <Button
             onClick={() => setShowHelpDialog(true)}
-            size="lg"
-            className="min-w-52 group"
+            size='lg'
+            className='min-w-52 group'
           >
-            <FolderOpen className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+            <FolderOpen className='mr-2 h-5 w-5 group-hover:scale-110 transition-transform' />
             Select Media Folder
           </Button>
         </div>
       )}
 
       {games.length > 0 && filteredGames.length === 0 && !loading && (
-        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-          <div className="bg-muted/50 rounded-full p-4 mb-4">
-            <AlertTriangle className="h-8 w-8 text-muted-foreground" />
+        <div className='flex flex-col items-center justify-center py-16 px-4 text-center'>
+          <div className='bg-muted/50 rounded-full p-4 mb-4'>
+            <AlertTriangle className='h-8 w-8 text-muted-foreground' />
           </div>
-          <h3 className="text-lg font-semibold mb-2">No Results Found</h3>
-          <p className="text-muted-foreground max-w-md mb-6">
+          <h3 className='text-lg font-semibold mb-2'>No Results Found</h3>
+          <p className='text-muted-foreground max-w-md mb-6'>
             No games match your current filter criteria. Try adjusting your
             filters or search query.
           </p>
-          <Button onClick={handleResetFilters} variant="outline">
+          <Button onClick={handleResetFilters} variant='outline'>
             Reset Filters
           </Button>
         </div>
@@ -676,7 +723,7 @@ export default function GameBrowser() {
             <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete all media files for the game
-              &quot;{gameToDelete?.name}&quot; on{" "}
+              &quot;{gameToDelete?.name}&quot; on{' '}
               {CONSOLES.find((c) => c.value === gameToDelete?.console)?.label}?
               This action cannot be undone.
             </AlertDialogDescription>
@@ -688,7 +735,7 @@ export default function GameBrowser() {
               disabled={isDeleting}
             >
               {isDeleting ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
               ) : null}
               Delete
             </AlertDialogAction>
@@ -698,10 +745,10 @@ export default function GameBrowser() {
 
       {/* Help Dialog for media folder selection */}
       <Dialog open={showHelpDialog} onOpenChange={setShowHelpDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className='sm:max-w-md'>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <HelpCircle className="h-5 w-5 text-primary" />
+            <DialogTitle className='flex items-center gap-2'>
+              <HelpCircle className='h-5 w-5 text-primary' />
               Select the ES-DE Media Folder
             </DialogTitle>
             <DialogDescription>
@@ -709,23 +756,23 @@ export default function GameBrowser() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-2">
-            <div className="rounded-md bg-muted p-4 text-sm">
-              <ol className="list-decimal pl-4 space-y-3">
+          <div className='space-y-4 py-2'>
+            <div className='rounded-md bg-muted p-4 text-sm'>
+              <ol className='list-decimal pl-4 space-y-3'>
                 <li>
-                  Navigate to the{" "}
-                  <span className="font-semibold">downloaded_media</span> folder
+                  Navigate to the{' '}
+                  <span className='font-semibold'>downloaded_media</span> folder
                   inside your ES-DE installation directory
                 </li>
                 <li>
                   On macOS, this is typically located at:
-                  <span className="font-mono text-xs block mt-1 bg-background p-1.5 rounded border">
+                  <span className='font-mono text-xs block mt-1 bg-background p-1.5 rounded border'>
                     ~/ES-DE/downloaded_media
                   </span>
                 </li>
                 <li>
-                  Select the{" "}
-                  <span className="font-semibold">downloaded_media</span> folder
+                  Select the{' '}
+                  <span className='font-semibold'>downloaded_media</span> folder
                   when prompted
                 </li>
                 <li>
@@ -735,26 +782,26 @@ export default function GameBrowser() {
               </ol>
             </div>
 
-            <div className="bg-amber-50 text-amber-800 p-3 rounded-md text-sm flex gap-2">
-              <AlertTriangle className="h-5 w-5 flex-shrink-0 text-amber-600" />
+            <div className='bg-amber-50 text-amber-800 p-3 rounded-md text-sm flex gap-2'>
+              <AlertTriangle className='h-5 w-5 flex-shrink-0 text-amber-600' />
               <p>
-                Make sure to select the correct{" "}
-                <span className="font-semibold">downloaded_media</span> folder,
+                Make sure to select the correct{' '}
+                <span className='font-semibold'>downloaded_media</span> folder,
                 not individual console folders within it.
               </p>
             </div>
           </div>
 
-          <DialogFooter className="sm:justify-center gap-2 sm:gap-0">
-            <Button variant="ghost" onClick={() => setShowHelpDialog(false)}>
+          <DialogFooter className='sm:justify-center gap-2 sm:gap-0'>
+            <Button variant='ghost' onClick={() => setShowHelpDialog(false)}>
               Cancel
             </Button>
             <Button
-              type="submit"
+              type='submit'
               onClick={() => handleScanMediaFolder(!!mainDirHandle)}
-              className="gap-2"
+              className='gap-2'
             >
-              <FolderOpen className="h-4 w-4" />
+              <FolderOpen className='h-4 w-4' />
               Browse for Folder
             </Button>
           </DialogFooter>
