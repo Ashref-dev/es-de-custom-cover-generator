@@ -4,8 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:debug": "NODE_OPTIONS='--inspect' next dev",
+    "dev:debug-turbo": "NODE_OPTIONS='--inspect' next dev --turbopack",
     "build": "next build",
     "start": "next start",
+    "start:debug": "NODE_OPTIONS='--inspect' next start",
     "lint": "next lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

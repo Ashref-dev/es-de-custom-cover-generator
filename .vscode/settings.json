@@ -21,5 +21,12 @@
   },
   "[css]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "debug.allowBreakpointsEverywhere": true,
+  "debug.inlineValues": "auto",
+  "debug.showInlineBreakpointCandidates": true,
+  "debug.openDebug": "openOnDebugBreak",
+  "typescript.preferences.debugHover": true,
+  "javascript.preferences.debugHover": true,
+  "debug.javascript.codelens.npmScripts": "top"
 }
