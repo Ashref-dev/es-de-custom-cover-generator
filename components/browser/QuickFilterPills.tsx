@@ -34,18 +34,18 @@ export function QuickFilterPills({
   }
 
   // Prioritize core filters first, then specific media type filters
-  const coreFilters = availableFilters.filter(f => 
+  const coreFilters = availableFilters.filter((f) =>
     ["missing-any", "complete", "has-videos"].includes(f.key)
   );
-  
-  const mediaFilters = availableFilters.filter(f => 
-    !["missing-any", "complete", "has-videos"].includes(f.key)
+
+  const mediaFilters = availableFilters.filter(
+    (f) => !["missing-any", "complete", "has-videos"].includes(f.key)
   );
 
   const renderFilterButton = (filter: QuickFilter) => {
     const isActive = activeFilters.includes(filter.key);
     const IconComponent = filter.icon;
-    
+
     return (
       <Button
         key={filter.key}
@@ -53,14 +53,16 @@ export function QuickFilterPills({
         size="sm"
         onClick={() => onFilterToggle(filter.key)}
         className={cn(
-          "h-9 gap-2 transition-all duration-200 flex-shrink-0 relative",
+          "relative h-9 flex-shrink-0 gap-2 transition-all duration-200",
           isActive
-            ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
+            ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
             : "hover:bg-muted/80 hover:border-primary/30"
         )}
       >
         <IconComponent className="h-4 w-4" />
-        <span className="hidden sm:inline whitespace-nowrap font-medium">{filter.label}</span>
+        <span className="hidden font-medium whitespace-nowrap sm:inline">
+          {filter.label}
+        </span>
         {filter.count !== undefined && (
           <Badge
             variant={isActive ? "secondary" : "outline"}
@@ -75,7 +77,7 @@ export function QuickFilterPills({
           </Badge>
         )}
         {isActive && (
-          <X className="h-3.5 w-3.5 ml-1 opacity-60 hover:opacity-100 transition-opacity" />
+          <X className="ml-1 h-3.5 w-3.5 opacity-60 transition-opacity hover:opacity-100" />
         )}
       </Button>
     );
@@ -84,23 +86,23 @@ export function QuickFilterPills({
   return (
     <div className={cn("space-y-4", className)}>
       {/* Header */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="text-muted-foreground flex items-center gap-2 text-sm">
         <Filter className="h-4 w-4" />
         <span className="font-medium">Quick Filters</span>
       </div>
-      
+
       {/* Core Filters */}
       {coreFilters.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {coreFilters.map(renderFilterButton)}
         </div>
       )}
-      
+
       {/* Media Type Filters */}
       {mediaFilters.length > 0 && (
         <div className="space-y-3">
           {coreFilters.length > 0 && (
-            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+            <div className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
               Missing Media Types
             </div>
           )}

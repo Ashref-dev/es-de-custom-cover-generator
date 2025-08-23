@@ -18,7 +18,11 @@ interface GameCompactViewProps {
 /**
  * Compact grid view component that displays games in a dense, information-rich layout
  */
-export function GameCompactView({ games, onViewGame, className = "" }: GameCompactViewProps) {
+export function GameCompactView({
+  games,
+  onViewGame,
+  className = "",
+}: GameCompactViewProps) {
   const getCompletionPercentage = (game: Game): number => {
     const totalTypes = Object.keys(game.mediaStatus).length;
     const presentTypes = Object.values(game.mediaStatus).filter(Boolean).length;
@@ -34,36 +38,45 @@ export function GameCompactView({ games, onViewGame, className = "" }: GameCompa
   };
 
   return (
-    <div className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3", className)}>
+    <div
+      className={cn(
+        "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
+        className
+      )}
+    >
       {games.map((game) => {
         const completion = getCompletionPercentage(game);
-        const consoleLabel = CONSOLES.find(c => c.value === game.console)?.label || game.console;
-        
+        const consoleLabel =
+          CONSOLES.find((c) => c.value === game.console)?.label || game.console;
+
         return (
           <Card
             key={game.id}
             className={cn(
-              "group relative transition-all duration-200 hover:shadow-md cursor-pointer border-l-4",
+              "group relative cursor-pointer border-l-4 transition-all duration-200 hover:shadow-md",
               getCompletionColor(completion)
             )}
             onClick={() => onViewGame(game)}
           >
-            <CardContent className="p-3 space-y-2">
+            <CardContent className="space-y-2 p-3">
               {/* Header with console and completion */}
               <div className="flex items-center justify-between">
-                <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                <Badge variant="outline" className="px-1.5 py-0.5 text-xs">
                   {consoleLabel}
                 </Badge>
-                <span className="text-xs font-medium text-muted-foreground">
+                <span className="text-muted-foreground text-xs font-medium">
                   {completion}%
                 </span>
               </div>
-              
+
               {/* Game title */}
-              <h3 className="font-medium text-sm leading-tight line-clamp-2 min-h-[2.5rem]" title={game.name}>
+              <h3
+                className="line-clamp-2 min-h-[2.5rem] text-sm leading-tight font-medium"
+                title={game.name}
+              >
                 {game.name}
               </h3>
-              
+
               {/* Media status - detailed view */}
               <div className="flex flex-wrap gap-1">
                 <MediaStatusBadge
@@ -72,12 +85,12 @@ export function GameCompactView({ games, onViewGame, className = "" }: GameCompa
                   className="justify-start"
                 />
               </div>
-              
+
               {/* Action button */}
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full h-7 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                className="h-7 w-full text-xs opacity-0 transition-opacity group-hover:opacity-100"
                 onClick={(e) => {
                   e.stopPropagation();
                   onViewGame(game);
@@ -90,9 +103,9 @@ export function GameCompactView({ games, onViewGame, className = "" }: GameCompa
           </Card>
         );
       })}
-      
+
       {games.length === 0 && (
-        <div className="col-span-full py-8 text-center text-muted-foreground">
+        <div className="text-muted-foreground col-span-full py-8 text-center">
           No games found matching your filters
         </div>
       )}

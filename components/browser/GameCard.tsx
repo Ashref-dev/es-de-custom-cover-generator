@@ -140,15 +140,15 @@ export default function GameCard({ game, onView }: GameCardProps) {
     CONSOLES.find((c) => c.value === game.console)?.label || game.console;
 
   return (
-    <Card className="group relative p-0 gap-0 overflow-hidden border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30 rounded-xl">
+    <Card className="group hover:shadow-primary/10 hover:border-primary/30 relative gap-0 overflow-hidden rounded-xl border p-0 transition-all duration-300 hover:shadow-lg">
       {/* Background Image Container - 4:3 aspect ratio */}
       <div className="relative aspect-[4/3] w-full overflow-hidden">
         {/* Screenshot Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-muted/30 to-muted flex items-center justify-center">
+        <div className="from-muted/30 to-muted absolute inset-0 flex items-center justify-center bg-gradient-to-br">
           {isLoadingScreenshot ? (
-            <div className="w-full h-full">
-              <div className="absolute inset-0 animate-pulse bg-muted-foreground/10"></div>
-              <div className="absolute top-1/3 left-1/4 right-1/4 h-8 rounded-md animate-pulse bg-muted-foreground/20"></div>
+            <div className="h-full w-full">
+              <div className="bg-muted-foreground/10 absolute inset-0 animate-pulse"></div>
+              <div className="bg-muted-foreground/20 absolute top-1/3 right-1/4 left-1/4 h-8 animate-pulse rounded-md"></div>
             </div>
           ) : screenshotUrl ? (
             <Image
@@ -156,13 +156,13 @@ export default function GameCard({ game, onView }: GameCardProps) {
               alt={`Screenshot for ${game.name}`}
               layout="fill"
               objectFit="cover"
-              className="transition-all duration-500 group-hover:scale-105 opacity-95 group-hover:opacity-100 group-hover:brightness-110"
+              className="opacity-95 transition-all duration-500 group-hover:scale-105 group-hover:opacity-100 group-hover:brightness-110"
               priority
             />
           ) : (
-            <div className="text-center p-4 flex flex-col items-center justify-center h-full">
-              <ImageOff className="h-12 w-12 text-muted-foreground/60" />
-              <p className="text-muted-foreground/80 text-sm mt-2">
+            <div className="flex h-full flex-col items-center justify-center p-4 text-center">
+              <ImageOff className="text-muted-foreground/60 h-12 w-12" />
+              <p className="text-muted-foreground/80 mt-2 text-sm">
                 No image available
               </p>
             </div>
@@ -173,11 +173,11 @@ export default function GameCard({ game, onView }: GameCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10"></div>
 
         {/* Header Section with Tags - Side by Side */}
-        <div className="absolute top-3 left-3 right-3 z-10 flex justify-between items-center">
+        <div className="absolute top-3 right-3 left-3 z-10 flex items-center justify-between">
           {/* Console Badge - Left */}
           <Badge
             variant="outline"
-            className="backdrop-blur-md bg-black/40 text-white border-white/10 py-1 font-medium"
+            className="border-white/10 bg-black/40 py-1 font-medium text-white backdrop-blur-md"
           >
             {consoleLabel}
           </Badge>
@@ -186,7 +186,7 @@ export default function GameCard({ game, onView }: GameCardProps) {
           <MediaStatusBadge
             mediaStatus={game.mediaStatus}
             variant="compact"
-            className="backdrop-blur-md bg-white/10 text-white text-xs"
+            className="bg-white/10 text-xs text-white backdrop-blur-md"
           />
         </div>
 
@@ -195,7 +195,7 @@ export default function GameCard({ game, onView }: GameCardProps) {
           <div className="absolute top-12 right-3 z-10">
             <Badge
               variant="default"
-              className="bg-red-500/80 backdrop-blur-md text-white font-medium"
+              className="bg-red-500/80 font-medium text-white backdrop-blur-md"
             >
               Video
             </Badge>
@@ -203,27 +203,27 @@ export default function GameCard({ game, onView }: GameCardProps) {
         )}
 
         {/* Game Title Overlay at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
-          <h3 className="text-xl font-semibold text-white truncate drop-shadow-md">
+        <div className="absolute right-0 bottom-0 left-0 z-10 p-4">
+          <h3 className="truncate text-xl font-semibold text-white drop-shadow-md">
             {game.name}
           </h3>
         </div>
 
         {/* Logo/Marquee overlay in center */}
         {game.hasLogo && (
-          <div className="absolute inset-0 flex items-center justify-center p-5 z-10">
+          <div className="absolute inset-0 z-10 flex items-center justify-center p-5">
             {isLoadingLogo ? (
-              <div className="w-full max-w-[80%] aspect-[3/1] backdrop-blur-sm flex items-center justify-center animate-pulse rounded-md">
-                <div className="h-4 w-3/4 bg-white/30 rounded"></div>
+              <div className="flex aspect-[3/1] w-full max-w-[80%] animate-pulse items-center justify-center rounded-md backdrop-blur-sm">
+                <div className="h-4 w-3/4 rounded bg-white/30"></div>
               </div>
             ) : logoImageUrl ? (
-              <div className="relative w-full max-w-[85%] aspect-[3/1] mx-auto">
+              <div className="relative mx-auto aspect-[3/1] w-full max-w-[85%]">
                 <Image
                   src={logoImageUrl}
                   alt={`${game.name} Logo`}
                   layout="fill"
                   objectFit="contain"
-                  className="drop-shadow-xl filter brightness-125"
+                  className="brightness-125 drop-shadow-xl filter"
                   priority
                 />
               </div>
@@ -233,12 +233,12 @@ export default function GameCard({ game, onView }: GameCardProps) {
       </div>
 
       {/* Action Button - Only View Details */}
-      <CardFooter className="flex items-center justify-center py-3 px-3 bg-card/95 backdrop-blur-sm">
+      <CardFooter className="bg-card/95 flex items-center justify-center px-3 py-3 backdrop-blur-sm">
         <Button
           variant="secondary"
           size="sm"
           onClick={() => onView(game)}
-          className="font-medium hover:bg-primary hover:text-primary-foreground w-full transition-colors duration-200"
+          className="hover:bg-primary hover:text-primary-foreground w-full font-medium transition-colors duration-200"
         >
           <Eye className="mr-1.5 h-4 w-4" />
           View Details

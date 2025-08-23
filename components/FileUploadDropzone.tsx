@@ -326,16 +326,16 @@ export default function FileUploadDropzone({
   };
 
   return (
-    <Card className="w-full flex flex-col">
+    <Card className="flex w-full flex-col">
       <CardHeader className="pb-2">
         <CardTitle className="text-base">{label}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
-      <CardContent className="flex-grow flex flex-col justify-center space-y-3">
+      <CardContent className="flex flex-grow flex-col justify-center space-y-3">
         {value && !isLoadingUrl && previewUrl ? (
           // Preview Mode
           <div className="space-y-2">
-            <div className="relative w-full h-32 bg-muted rounded-md overflow-hidden flex items-center justify-center">
+            <div className="bg-muted relative flex h-32 w-full items-center justify-center overflow-hidden rounded-md">
               {value.type.startsWith("image/") ? (
                 <Image
                   src={previewUrl}
@@ -352,17 +352,17 @@ export default function FileUploadDropzone({
                   className="max-h-full max-w-full"
                 />
               ) : (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   No preview available
                 </p>
               )}
             </div>
-            <div className="bg-muted/50 rounded-lg p-2 flex items-center justify-between">
-              <div className="truncate flex-1 mr-2">
-                <p className="text-sm font-medium truncate" title={value.name}>
+            <div className="bg-muted/50 flex items-center justify-between rounded-lg p-2">
+              <div className="mr-2 flex-1 truncate">
+                <p className="truncate text-sm font-medium" title={value.name}>
                   {value.name}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   {(value.size / 1024).toFixed(1)} KB
                 </p>
               </div>
@@ -378,25 +378,25 @@ export default function FileUploadDropzone({
           </div>
         ) : isLoadingUrl || isConvertingWebP ? (
           // URL Loading or WebP Conversion Mode
-          <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center min-h-32 h-full border-primary">
-            <p className="text-sm text-muted-foreground mb-2">
+          <div className="border-primary flex h-full min-h-32 flex-col items-center justify-center rounded-lg border-2 border-dashed p-6">
+            <p className="text-muted-foreground mb-2 text-sm">
               {isLoadingUrl
                 ? "Fetching via server..."
                 : "Converting WebP to JPG..."}
             </p>
             <Progress value={undefined} className="w-3/4 animate-pulse" />
-            {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
+            {error && <p className="text-destructive mt-2 text-xs">{error}</p>}
           </div>
         ) : (
           // Input Mode (Dropzone + URL Field)
           <div className="space-y-3">
             <div
               {...getRootProps()}
-              className={`border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors flex flex-col items-center justify-center min-h-24 ${getBorderColor()}`}
+              className={`flex min-h-24 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors ${getBorderColor()}`}
             >
               <input {...getInputProps()} />
-              <UploadIcon className="w-6 h-6 mb-2 text-muted-foreground" />
-              <div className="text-sm text-center text-muted-foreground">
+              <UploadIcon className="text-muted-foreground mb-2 h-6 w-6" />
+              <div className="text-muted-foreground text-center text-sm">
                 {isDragActive
                   ? "Drop file/URL here"
                   : "Drag file/URL here, or click to select"}
@@ -405,7 +405,7 @@ export default function FileUploadDropzone({
             <div className="relative">
               <Label
                 htmlFor={`${label}-url-input`}
-                className="text-xs text-muted-foreground absolute -top-2 left-2 bg-background px-1"
+                className="text-muted-foreground bg-background absolute -top-2 left-2 px-1 text-xs"
               >
                 Or paste image URL
               </Label>
@@ -415,12 +415,12 @@ export default function FileUploadDropzone({
                 placeholder="https://..."
                 value={imageUrlInput}
                 onChange={(e) => setImageUrlInput(e.target.value)}
-                className="text-sm pt-2"
+                className="pt-2 text-sm"
                 disabled={isLoadingUrl || isConvertingWebP}
               />
             </div>
             {error && (
-              <p className="mt-1 text-xs text-destructive text-center">
+              <p className="text-destructive mt-1 text-center text-xs">
                 {error}
               </p>
             )}

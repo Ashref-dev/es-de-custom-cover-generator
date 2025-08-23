@@ -93,7 +93,7 @@ export function FloatingIcons({
           key={index}
           className={`absolute ${
             icon.position
-          } hidden md:flex size-32 items-center justify-center z-10 ${
+          } z-10 hidden size-32 items-center justify-center md:flex ${
             icon.animation
           } ${icon.additionalAnimation || ""} ${className}`}
           style={{

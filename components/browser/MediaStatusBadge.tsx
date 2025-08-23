@@ -1,7 +1,12 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Check, X } from "lucide-react";
 import { MediaStatus } from "@/types";
 
@@ -15,16 +20,16 @@ interface MediaStatusBadgeProps {
  * Component that displays the media status for a game with individual indicators
  * for each media type, showing present types in gray and missing types in red
  */
-export function MediaStatusBadge({ 
-  mediaStatus, 
+export function MediaStatusBadge({
+  mediaStatus,
   variant = "compact",
-  className = "" 
+  className = "",
 }: MediaStatusBadgeProps) {
   // Map media type keys to display labels for tooltips
   const mediaTypeLabels: Record<keyof MediaStatus, string> = {
     covers: "Cover",
     marquees: "Logo",
-    screenshots: "Screenshot", 
+    screenshots: "Screenshot",
     titlescreens: "Title Screen",
     "3dboxes": "3D Box",
     backcovers: "Back Cover",
@@ -44,12 +49,12 @@ export function MediaStatusBadge({
           <TooltipTrigger asChild>
             <Badge
               variant="secondary"
-              className={`backdrop-blur-md bg-white/10 text-white text-xs ${className}`}
+              className={`bg-white/10 text-xs text-white backdrop-blur-md ${className}`}
             >
               {availableCount}/{totalCount} media
             </Badge>
           </TooltipTrigger>
-          <TooltipContent side="bottom" className="p-3 max-w-xs">
+          <TooltipContent side="bottom" className="max-w-xs p-3">
             <div className="space-y-2">
               <div className="text-sm font-medium">Media Status</div>
               <div className="grid grid-cols-3 gap-1 text-xs">
@@ -87,10 +92,10 @@ export function MediaStatusBadge({
             <TooltipTrigger asChild>
               <Badge
                 variant={isPresent ? "secondary" : "destructive"}
-                className={`text-xs px-1.5 py-0.5 ${
-                  isPresent 
-                    ? "bg-muted text-muted-foreground border-muted-foreground/20" 
-                    : "bg-red-500/10 text-red-600 border-red-500/20"
+                className={`px-1.5 py-0.5 text-xs ${
+                  isPresent
+                    ? "bg-muted text-muted-foreground border-muted-foreground/20"
+                    : "border-red-500/20 bg-red-500/10 text-red-600"
                 }`}
               >
                 {isPresent ? (

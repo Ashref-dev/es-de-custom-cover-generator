@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { ReloadIcon } from '@radix-ui/react-icons';
-import { cn } from '@/lib/utils';
+import { Button } from "@/components/ui/button";
+import { ReloadIcon } from "@radix-ui/react-icons";
+import { cn } from "@/lib/utils";
 
 interface SubmitButtonProps {
   /** Whether the button is in a loading/pending state */
@@ -25,7 +25,7 @@ interface SubmitButtonProps {
 export default function SubmitButton({
   isPending,
   text,
-  pendingText = 'Processing...',
+  pendingText = "Processing...",
   disabled = false,
   onClick,
   className,
@@ -37,10 +37,8 @@ export default function SubmitButton({
       disabled={isPending || disabled}
       className={cn("w-full", className)}
     >
-      {isPending && (
-        <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-      )}
+      {isPending && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
       {isPending ? pendingText : text}
     </Button>
   );
-} 
+}

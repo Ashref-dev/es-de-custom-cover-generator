@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Button } from '@/components/ui/button';
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,13 +9,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Grid3X3, List, ArrowUpDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/dropdown-menu";
+import { Grid3X3, List, ArrowUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export type ViewMode = 'grid' | 'list' | 'detail';
-export type SortOption = 'name' | 'console' | 'mediaCount';
-export type SortDirection = 'asc' | 'desc';
+export type ViewMode = "grid" | "list" | "detail";
+export type SortOption = "name" | "console" | "mediaCount";
+export type SortDirection = "asc" | "desc";
 
 interface ViewControlsProps {
   viewMode: ViewMode;
@@ -35,7 +35,7 @@ export function ViewControls({
   sortBy,
   sortDirection,
   onSortChange,
-  className = '',
+  className = "",
 }: ViewControlsProps) {
   const sortOptions: {
     value: SortOption;
@@ -44,55 +44,55 @@ export function ViewControls({
     descLabel: string;
   }[] = [
     {
-      value: 'name',
-      label: 'Name',
-      ascLabel: 'A → Z',
-      descLabel: 'Z → A',
+      value: "name",
+      label: "Name",
+      ascLabel: "A → Z",
+      descLabel: "Z → A",
     },
     {
-      value: 'console',
-      label: 'Console',
-      ascLabel: 'A → Z',
-      descLabel: 'Z → A',
+      value: "console",
+      label: "Console",
+      ascLabel: "A → Z",
+      descLabel: "Z → A",
     },
 
     {
-      value: 'mediaCount',
-      label: 'Media Count',
-      ascLabel: 'Low → High',
-      descLabel: 'High → Low',
+      value: "mediaCount",
+      label: "Media Count",
+      ascLabel: "Low → High",
+      descLabel: "High → Low",
     },
   ];
 
   const getSortLabel = () => {
     const option = sortOptions.find((opt) => opt.value === sortBy);
     const directionLabel =
-      sortDirection === 'asc' ? option?.ascLabel : option?.descLabel;
+      sortDirection === "asc" ? option?.ascLabel : option?.descLabel;
     return `${option?.label} (${directionLabel})`;
   };
 
   return (
-    <div className={cn('flex items-center justify-between gap-4', className)}>
+    <div className={cn("flex items-center justify-between gap-4", className)}>
       {/* View Mode Toggle - Left Side */}
       <ToggleGroup
-        type='single'
+        type="single"
         value={viewMode}
         onValueChange={(value) => value && onViewModeChange(value as ViewMode)}
-        className='border border-border rounded-lg'
+        className="border-border rounded-lg border"
       >
         <ToggleGroupItem
-          value='grid'
-          aria-label='Grid view'
-          className='px-3 py-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground'
+          value="grid"
+          aria-label="Grid view"
+          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground px-3 py-2"
         >
-          <Grid3X3 className='h-4 w-4' />
+          <Grid3X3 className="h-4 w-4" />
         </ToggleGroupItem>
         <ToggleGroupItem
-          value='list'
-          aria-label='List view'
-          className='px-3 py-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground'
+          value="list"
+          aria-label="List view"
+          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground px-3 py-2"
         >
-          <List className='h-4 w-4' />
+          <List className="h-4 w-4" />
         </ToggleGroupItem>
       </ToggleGroup>
 
@@ -100,49 +100,49 @@ export function ViewControls({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant='outline'
-            size='sm'
-            className='gap-2 min-w-[120px] justify-start'
+            variant="outline"
+            size="sm"
+            className="min-w-[120px] justify-start gap-2"
           >
-            <ArrowUpDown className='h-4 w-4 flex-shrink-0' />
-            <span className='hidden sm:inline text-left truncate'>
+            <ArrowUpDown className="h-4 w-4 flex-shrink-0" />
+            <span className="hidden truncate text-left sm:inline">
               {getSortLabel()}
             </span>
-            <span className='sm:hidden'>Sort</span>
+            <span className="sm:hidden">Sort</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end' className='w-56'>
-          <DropdownMenuLabel className='text-xs font-semibold text-muted-foreground uppercase tracking-wider'>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuLabel className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
             Sort by
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           {sortOptions.map((option) => (
-            <div key={option.value} className='space-y-1'>
+            <div key={option.value} className="space-y-1">
               <DropdownMenuItem
-                onClick={() => onSortChange(option.value, 'asc')}
+                onClick={() => onSortChange(option.value, "asc")}
                 className={cn(
-                  'cursor-pointer flex items-center justify-between py-2.5',
+                  "flex cursor-pointer items-center justify-between py-2.5",
                   sortBy === option.value &&
-                    sortDirection === 'asc' &&
-                    'bg-primary/10 text-primary font-medium'
+                    sortDirection === "asc" &&
+                    "bg-primary/10 text-primary font-medium"
                 )}
               >
                 <span>{option.label}</span>
-                <span className='text-xs text-muted-foreground ml-2'>
+                <span className="text-muted-foreground ml-2 text-xs">
                   {option.ascLabel}
                 </span>
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => onSortChange(option.value, 'desc')}
+                onClick={() => onSortChange(option.value, "desc")}
                 className={cn(
-                  'cursor-pointer flex items-center justify-between py-2.5',
+                  "flex cursor-pointer items-center justify-between py-2.5",
                   sortBy === option.value &&
-                    sortDirection === 'desc' &&
-                    'bg-primary/10 text-primary font-medium'
+                    sortDirection === "desc" &&
+                    "bg-primary/10 text-primary font-medium"
                 )}
               >
                 <span>{option.label}</span>
-                <span className='text-xs text-muted-foreground ml-2'>
+                <span className="text-muted-foreground ml-2 text-xs">
                   {option.descLabel}
                 </span>
               </DropdownMenuItem>

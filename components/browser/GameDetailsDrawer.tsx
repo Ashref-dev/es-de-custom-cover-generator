@@ -7,13 +7,12 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
-  SheetFooter,
   SheetClose,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Game } from "@/types";
 import { CONSOLES, MEDIA_TYPES } from "@/lib/constants";
-import { X } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { GameMediaForm } from "./GameMediaForm";
 
@@ -167,33 +166,30 @@ export function GameDetailsDrawer({
     >
       <SheetContent
         side="bottom"
-        className="h-[99vh] w-screen flex flex-col border-none"
+        className="flex h-[100dvh] w-screen flex-col !gap-0 border-none"
       >
-        <SheetHeader className="p-6 bg-background border-b border-border/40 shadow-sm z-10 flex-shrink-0">
-          <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
-            <div className="flex-1">
-              <SheetTitle className="text-3xl font-bold tracking-tight">
+        <SheetHeader className="bg-background border-border/40 z-10 flex-shrink-0 border-b shadow-sm">
+          <div className="mx-auto flex w-full max-w-7xl items-start justify-between">
+            <div className="min-w-0 flex-1">
+              <SheetTitle className="truncate text-2xl font-bold tracking-tight">
                 {game.name}
               </SheetTitle>
-              <SheetDescription className="text-lg text-muted-foreground mt-1">
+              <SheetDescription className="text-muted-foreground text-sm">
                 {consoleLabel} — Media Management
               </SheetDescription>
             </div>
             <SheetClose asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full ml-4 flex-shrink-0 hover:bg-muted/80 transition-colors"
-              >
-                <X className="h-5 w-5" />
+              <Button className="ml-4 flex-shrink-0 gap-2 transition-colors">
+                <ArrowLeft className="h-4 w-4" />
+                Go back
               </Button>
             </SheetClose>
           </div>
         </SheetHeader>
 
         <div className="flex-grow overflow-hidden">
-          <ScrollArea className="h-full w-full">
-            <div className="max-w-7xl mx-auto p-6">
+          <ScrollArea className="h-full w-full px-4">
+            <div className="mx-auto max-w-7xl py-4">
               <GameMediaForm
                 game={game}
                 mainDirHandle={mainDirHandle}
@@ -204,16 +200,6 @@ export function GameDetailsDrawer({
             </div>
           </ScrollArea>
         </div>
-
-        <SheetFooter className="p-6 border-t border-border/40 bg-background z-10 flex-shrink-0 mt-auto">
-          <div className="max-w-7xl mx-auto w-full flex justify-center">
-            <SheetClose asChild>
-              <Button variant="outline" size="lg" className="px-6">
-                Close
-              </Button>
-            </SheetClose>
-          </div>
-        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

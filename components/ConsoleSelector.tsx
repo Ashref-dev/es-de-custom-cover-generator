@@ -1,17 +1,23 @@
-'use client';
+"use client";
 
-import { ConsoleSelectorProps } from '@/types';
-import { CONSOLES } from '@/lib/constants';
+import { ConsoleSelectorProps } from "@/types";
+import { CONSOLES } from "@/lib/constants";
 import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 /**
  * Console selector component using a Select dropdown
@@ -19,7 +25,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 export default function ConsoleSelector({
   value,
   onChange,
-  disabled = false
+  disabled = false,
 }: ConsoleSelectorProps) {
   return (
     <Card className="w-full">
@@ -30,11 +36,7 @@ export default function ConsoleSelector({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Select
-          value={value}
-          onValueChange={onChange}
-          disabled={disabled}
-        >
+        <Select value={value} onValueChange={onChange} disabled={disabled}>
           <SelectTrigger>
             <SelectValue placeholder="Select a console..." />
           </SelectTrigger>
@@ -52,4 +54,4 @@ export default function ConsoleSelector({
       </CardContent>
     </Card>
   );
-} 
+}

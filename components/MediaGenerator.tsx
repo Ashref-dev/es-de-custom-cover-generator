@@ -264,15 +264,15 @@ export default function MediaGenerator() {
   };
 
   return (
-    <Card className="max-w-4xl mx-auto border dark:border-slate-800 shadow-sm dark:shadow-slate-950/20">
+    <Card className="mx-auto max-w-4xl border shadow-sm dark:border-slate-800 dark:shadow-slate-950/20">
       {/* Confetti component */}
       <Confetti active={showConfetti} duration={6000} />
 
-      <CardHeader className="text-center pt-8 pb-6">
-        <CardTitle className="font-pixel text-4xl md:text-6xl mb-4 bg-gradient-to-r from-[var(--gradient-1)] to-[var(--gradient-2)] bg-clip-text text-transparent">
+      <CardHeader className="pt-8 pb-6 text-center">
+        <CardTitle className="font-pixel mb-4 bg-gradient-to-r from-[var(--gradient-1)] to-[var(--gradient-2)] bg-clip-text text-4xl text-transparent md:text-6xl">
           ESDE Media Generator
         </CardTitle>
-        <CardDescription className="text-base md:text-lg max-w-lg mx-auto">
+        <CardDescription className="mx-auto max-w-lg text-base md:text-lg">
           Generate the correct folder structure for Emulation Station Desktop
           Edition media files.
         </CardDescription>
@@ -292,17 +292,17 @@ export default function MediaGenerator() {
           <div ref={successRef}>
             <Alert
               variant="default"
-              className="border-green-500 dark:border-green-600 bg-green-50 dark:bg-green-950/30 text-green-800 dark:text-green-400 animate-in fade-in-50 duration-500"
+              className="animate-in fade-in-50 border-green-500 bg-green-50 text-green-800 duration-500 dark:border-green-600 dark:bg-green-950/30 dark:text-green-400"
             >
               <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-500" />
               <AlertTitle>Success</AlertTitle>
-              <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <AlertDescription className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <span>{success}</span>
                 <Button
                   onClick={handleStartNewGame}
                   variant="outline"
                   size="sm"
-                  className="gap-2 text-green-700 dark:text-green-300 border-green-300 dark:border-green-800 hover:bg-green-50 dark:hover:bg-green-950 hover:text-green-800 dark:hover:text-green-200 whitespace-nowrap"
+                  className="gap-2 border-green-300 whitespace-nowrap text-green-700 hover:bg-green-50 hover:text-green-800 dark:border-green-800 dark:text-green-300 dark:hover:bg-green-950 dark:hover:text-green-200"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   Start New Game
@@ -314,19 +314,19 @@ export default function MediaGenerator() {
 
         {/* Media Folder Selection */}
         <div className="space-y-4">
-          <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-2xl font-pixel bg-gradient-to-r from-[var(--gradient-1)] to-[var(--gradient-2)] bg-clip-text text-transparent">
+          <div className="mb-2 flex items-center gap-3">
+            <h3 className="font-pixel bg-gradient-to-r from-[var(--gradient-1)] to-[var(--gradient-2)] bg-clip-text text-2xl text-transparent">
               Step 1: Select Folder
             </h3>
             <div className="h-px flex-1 bg-gradient-to-r from-[var(--gradient-1)]/20 to-transparent"></div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-muted/30 p-4 rounded-lg">
+          <div className="bg-muted/30 flex flex-col gap-4 rounded-lg p-4 sm:flex-row sm:items-center">
             <div className="flex-grow">
-              <p className="text-sm font-medium mb-1">
+              <p className="mb-1 text-sm font-medium">
                 ES-DE downloaded_media Folder
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {hasFolderAccess
                   ? "✓ Folder access granted"
                   : "Select the downloaded_media folder to create files"}
@@ -346,8 +346,8 @@ export default function MediaGenerator() {
 
         {/* ROM Name */}
         <div className="space-y-4">
-          <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-2xl font-pixel bg-gradient-to-r from-[var(--gradient-1)] to-[var(--gradient-2)] bg-clip-text text-transparent">
+          <div className="mb-2 flex items-center gap-3">
+            <h3 className="font-pixel bg-gradient-to-r from-[var(--gradient-1)] to-[var(--gradient-2)] bg-clip-text text-2xl text-transparent">
               Step 2: Game Details
             </h3>
             <div className="h-px flex-1 bg-gradient-to-r from-[var(--gradient-1)]/20 to-transparent"></div>
@@ -366,7 +366,7 @@ export default function MediaGenerator() {
               placeholder="Enter ROM name (e.g., Super Mario Bros)"
               disabled={isPending}
             />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               This should match the exact filename of your ROM (without
               extension)
             </p>
@@ -386,18 +386,18 @@ export default function MediaGenerator() {
 
         {/* Media Upload Sections */}
         <div className="space-y-4">
-          <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-2xl font-pixel bg-gradient-to-r from-[var(--gradient-1)] to-[var(--gradient-2)] bg-clip-text text-transparent">
+          <div className="mb-2 flex items-center gap-3">
+            <h3 className="font-pixel bg-gradient-to-r from-[var(--gradient-1)] to-[var(--gradient-2)] bg-clip-text text-2xl text-transparent">
               Step 3: Media Files
             </h3>
             <div className="h-px flex-1 bg-gradient-to-r from-[var(--gradient-1)]/20 to-transparent"></div>
           </div>
 
-          <p className="text-sm text-muted-foreground mb-6">
+          <p className="text-muted-foreground mb-6 text-sm">
             Upload the media files for your ROM. At least one file is required.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {MEDIA_TYPES.map((mediaType) => (
               <FileUploadDropzone
                 key={mediaType.key}
@@ -415,12 +415,12 @@ export default function MediaGenerator() {
 
         {/* Start New Game Button */}
         {(romName || consoleName || uploadedFileCount > 0) && !success && (
-          <div className="border-t pt-6 flex justify-center">
+          <div className="flex justify-center border-t pt-6">
             <Button
               variant="outline"
               size="sm"
               onClick={handleStartNewGame}
-              className="gap-2 text-muted-foreground"
+              className="text-muted-foreground gap-2"
             >
               <RefreshCw className="h-3.5 w-3.5" />
               Reset Form
@@ -429,9 +429,9 @@ export default function MediaGenerator() {
         )}
       </CardContent>
 
-      <CardFooter className="pt-6 pb-8 px-6">
-        <div className="w-full flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <div className="flex items-center bg-muted/30 px-4 py-2 rounded-lg">
+      <CardFooter className="px-6 pt-6 pb-8">
+        <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="bg-muted/30 flex items-center rounded-lg px-4 py-2">
             <p className="text-sm font-medium">
               {uploadedFileCount} file{uploadedFileCount !== 1 ? "s" : ""}{" "}
               selected
@@ -459,7 +459,7 @@ export default function MediaGenerator() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <HelpCircle className="h-5 w-5 text-primary" />
+              <HelpCircle className="text-primary h-5 w-5" />
               Select the ES-DE Media Folder
             </DialogTitle>
             <DialogDescription>
@@ -469,8 +469,8 @@ export default function MediaGenerator() {
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="rounded-md bg-muted p-4 text-sm">
-              <ol className="list-decimal pl-4 space-y-3">
+            <div className="bg-muted rounded-md p-4 text-sm">
+              <ol className="list-decimal space-y-3 pl-4">
                 <li>
                   Navigate to the{" "}
                   <span className="font-semibold">downloaded_media</span> folder
@@ -478,7 +478,7 @@ export default function MediaGenerator() {
                 </li>
                 <li>
                   On macOS, this is typically located at:
-                  <span className="font-mono text-xs block mt-1 bg-background p-1.5 rounded border">
+                  <span className="bg-background mt-1 block rounded border p-1.5 font-mono text-xs">
                     ~/ES-DE/downloaded_media
                   </span>
                 </li>
@@ -494,7 +494,7 @@ export default function MediaGenerator() {
               </ol>
             </div>
 
-            <div className="bg-amber-50 text-amber-800 p-3 rounded-md text-sm flex gap-2">
+            <div className="flex gap-2 rounded-md bg-amber-50 p-3 text-sm text-amber-800">
               <AlertCircle className="h-5 w-5 flex-shrink-0 text-amber-600" />
               <p>
                 Make sure to select the correct{" "}
@@ -504,7 +504,7 @@ export default function MediaGenerator() {
             </div>
           </div>
 
-          <DialogFooter className="sm:justify-center gap-2 sm:gap-0">
+          <DialogFooter className="gap-2 sm:justify-center sm:gap-0">
             <Button variant="ghost" onClick={() => setShowHelpDialog(false)}>
               Cancel
             </Button>

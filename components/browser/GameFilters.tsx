@@ -4,7 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AlertTriangle, X, Filter } from "lucide-react";
 import { ConsoleOption } from "@/types";
 import { ConsoleCarousel } from "./ConsoleCarousel";
@@ -39,7 +45,10 @@ export function GameFilters({
   filteredCount,
   totalCount,
 }: GameFiltersProps) {
-  const filtersActive = selectedConsole !== "all" || searchQuery !== "" || selectedMediaFilter !== "all";
+  const filtersActive =
+    selectedConsole !== "all" ||
+    searchQuery !== "" ||
+    selectedMediaFilter !== "all";
   const hasNoResults = filteredCount === 0 && totalCount > 0;
 
   // Add "All Consoles" option
@@ -61,7 +70,7 @@ export function GameFilters({
           <div className="relative flex-1">
             <Input
               placeholder="Search games..."
-              className="w-full h-11 pr-10 border-border/60 focus:border-primary/50 transition-colors"
+              className="border-border/60 focus:border-primary/50 h-11 w-full pr-10 transition-colors"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
             />
@@ -69,7 +78,7 @@ export function GameFilters({
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 hover:bg-muted/80 transition-colors"
+                className="hover:bg-muted/80 absolute top-1/2 right-1 h-9 w-9 -translate-y-1/2 transition-colors"
                 onClick={() => onSearchChange("")}
               >
                 <X className="h-4 w-4" />
@@ -79,10 +88,13 @@ export function GameFilters({
 
           {/* Media Filter Dropdown */}
           <div className="flex-shrink-0">
-            <Select value={selectedMediaFilter} onValueChange={onMediaFilterChange}>
-              <SelectTrigger className="w-52 h-11 border-border/60 focus:border-primary/50">
+            <Select
+              value={selectedMediaFilter}
+              onValueChange={onMediaFilterChange}
+            >
+              <SelectTrigger className="border-border/60 focus:border-primary/50 h-11 w-52">
                 <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Filter className="text-muted-foreground h-4 w-4" />
                   <SelectValue />
                 </div>
               </SelectTrigger>
@@ -100,8 +112,8 @@ export function GameFilters({
             variant="outline"
             size="sm"
             className={cn(
-              "h-11 px-4 gap-2 border-red-500/60 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-500 transition-colors",
-              !filtersActive ? "opacity-50 cursor-not-allowed" : ""
+              "h-11 gap-2 border-red-500/60 px-4 text-red-600 transition-colors hover:border-red-500 hover:bg-red-50 hover:text-red-700",
+              !filtersActive ? "cursor-not-allowed opacity-50" : ""
             )}
             onClick={onResetFilters}
             disabled={!filtersActive}
@@ -112,28 +124,48 @@ export function GameFilters({
         </div>
       </div>
 
-      <div className="flex justify-between items-center mt-6">
+      <div className="mt-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <p className="text-sm text-muted-foreground font-medium">
-            Showing <span className="text-foreground font-semibold">{filteredCount}</span> of{" "}
-            <span className="text-foreground font-semibold">{totalCount}</span> games
+          <p className="text-muted-foreground text-sm font-medium">
+            Showing{" "}
+            <span className="text-foreground font-semibold">
+              {filteredCount}
+            </span>{" "}
+            of{" "}
+            <span className="text-foreground font-semibold">{totalCount}</span>{" "}
+            games
           </p>
-          
+
           {/* Active Filter Badges */}
           {filtersActive && (
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex flex-wrap items-center gap-2">
               {selectedConsole !== "all" && (
-                <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                  Console: {availableConsoles.find(c => c.value === selectedConsole)?.label || selectedConsole}
+                <Badge
+                  variant="outline"
+                  className="border-blue-200 bg-blue-50 text-xs text-blue-700"
+                >
+                  Console:{" "}
+                  {availableConsoles.find((c) => c.value === selectedConsole)
+                    ?.label || selectedConsole}
                 </Badge>
               )}
               {selectedMediaFilter !== "all" && (
-                <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
-                  {MEDIA_FILTER_OPTIONS.find(f => f.key === selectedMediaFilter)?.label}
+                <Badge
+                  variant="outline"
+                  className="border-purple-200 bg-purple-50 text-xs text-purple-700"
+                >
+                  {
+                    MEDIA_FILTER_OPTIONS.find(
+                      (f) => f.key === selectedMediaFilter
+                    )?.label
+                  }
                 </Badge>
               )}
               {searchQuery && (
-                <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                <Badge
+                  variant="outline"
+                  className="border-green-200 bg-green-50 text-xs text-green-700"
+                >
                   Search: &ldquo;{searchQuery}&rdquo;
                 </Badge>
               )}
@@ -144,7 +176,7 @@ export function GameFilters({
         {hasNoResults && (
           <Badge
             variant="outline"
-            className="flex gap-2 items-center bg-amber-50 text-amber-800 border-amber-300 px-3 py-1.5"
+            className="flex items-center gap-2 border-amber-300 bg-amber-50 px-3 py-1.5 text-amber-800"
           >
             <AlertTriangle className="h-3.5 w-3.5" />
             No results found

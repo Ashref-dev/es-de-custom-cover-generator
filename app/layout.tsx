@@ -48,10 +48,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Navigation />
-          <main className="min-h-screen py-4">{children}</main>
-          <footer className="py-6 border-t">
-            <div className="container mx-auto px-4 flex items-center justify-center text-sm text-muted-foreground">
-              <GamepadIcon className="h-4 w-4 gradient-icon mr-2" />
+          <main className="mx-auto min-h-screen max-w-7xl px-6 py-4">
+            {children}
+          </main>
+          <footer className="border-t py-6">
+            <div className="text-muted-foreground mx-auto flex items-center justify-center px-4 text-sm">
+              <GamepadIcon className="gradient-icon mr-2 h-4 w-4" />
               <p>
                 ES-DE Media Manager &copy; {new Date().getFullYear()} - made
                 with ❤️ by{" "}

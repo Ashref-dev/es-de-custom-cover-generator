@@ -1,8 +1,9 @@
-import MediaGenerator from '@/components/MediaGenerator';
+import MediaGenerator from "@/components/MediaGenerator";
 
 export const metadata = {
   title: "Generate Files",
-  description: "Generate the Emulation Station Desktop Edition (ESDE) media folder structure by uploading your media files.",
+  description:
+    "Generate the Emulation Station Desktop Edition (ESDE) media folder structure by uploading your media files.",
 };
 
 /**
@@ -11,8 +12,8 @@ export const metadata = {
  */
 export default function GeneratorPage() {
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="py-8">
       <MediaGenerator />
     </div>
   );
-} 
+}

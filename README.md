@@ -8,31 +8,31 @@ The downloaded_media folder contains folders for each console, for example it'll
 
 Based on the current structure, the available consoles are:
 
-*   `archimedes`
-*   `dreamcast`
-*   `gba`
-*   `gc`
-*   `genesis`
-*   `j2me`
-*   `mastersystem`
-*   `msx`
-*   `n3ds`
-*   `n64`
-*   `nds`
-*   `neogeocd`
-*   `nes`
-*   `ngpc`
-*   `ps2`
-*   `ps3`
-*   `psp`
-*   `psvita`
-*   `psx`
-*   `snes`
-*   `switch`
-*   `tg-cd`
-*   `tic80`
-*   `wii`
-*   `wiiu`
+- `archimedes`
+- `dreamcast`
+- `gba`
+- `gc`
+- `genesis`
+- `j2me`
+- `mastersystem`
+- `msx`
+- `n3ds`
+- `n64`
+- `nds`
+- `neogeocd`
+- `nes`
+- `ngpc`
+- `ps2`
+- `ps3`
+- `psp`
+- `psvita`
+- `psx`
+- `snes`
+- `switch`
+- `tg-cd`
+- `tic80`
+- `wii`
+- `wiiu`
 
 Here's an example of the folder structure under `~/ES-DE/downloaded_media` based on the output of `tree ~/ES-DE/downloaded_media`:
 

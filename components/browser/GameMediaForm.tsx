@@ -289,7 +289,7 @@ export function GameMediaForm({
         {saveSuccess && (
           <Alert
             variant="default"
-            className="border-green-500 bg-green-50 text-green-700 animate-in fade-in-50"
+            className="animate-in fade-in-50 border-green-500 bg-green-50 text-green-700"
           >
             <CheckCircle2 className="h-4 w-4" />
             <AlertTitle>Success</AlertTitle>
@@ -298,7 +298,7 @@ export function GameMediaForm({
         )}
 
         {/* Media Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
           {MEDIA_TYPES.map((mediaType: MediaTypeConfig) => {
             const currentUrl = currentMediaUrls[mediaType.key];
             const newFile = editableMediaFiles[mediaType.key];
@@ -309,12 +309,18 @@ export function GameMediaForm({
               : !!currentUrl || !!newFile;
 
             return (
-              <div key={mediaType.key} className="space-y-4">
-                <div className="flex items-center justify-between">
+              <div
+                key={mediaType.key}
+                className="group border-border hover:border-primary/40 bg-background/30 space-y-4 overflow-hidden rounded-xl border-2 border-dotted transition-all duration-300"
+              >
+                {/* Section Header */}
+                <div className="border-border/20 bg-background/50 flex items-center justify-between border-b px-4 pt-3">
                   <div className="flex items-center gap-3">
-                    <h3 className="text-lg font-semibold">{mediaType.label}</h3>
+                    <h3 className="text-foreground text-lg font-semibold">
+                      {mediaType.label}
+                    </h3>
 
-                    {/* Optimization Toggle for all image types (not videos) */}
+                    {/* Optimization Toggle for all image types except videos */}
                     {mediaType.key !== "videos" && (
                       <div className="flex items-center gap-2">
                         <Switch
@@ -328,7 +334,7 @@ export function GameMediaForm({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <div className="cursor-help">
-                              <Settings className="h-4 w-4 text-muted-foreground" />
+                              <Settings className="text-muted-foreground hover:text-foreground h-4 w-4 transition-colors" />
                             </div>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="max-w-xs">
@@ -353,108 +359,115 @@ export function GameMediaForm({
                   </div>
 
                   {hasContent && (
-                    <div className="inline-flex items-center px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary font-medium">
+                    <div className="inline-flex items-center rounded-full border border-green-200 bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-400">
                       Active
                     </div>
                   )}
                 </div>
 
-                {/* Media Preview */}
-                {isLoadingUrls && !newFile ? (
-                  <div className="h-48 w-full bg-muted rounded-lg flex items-center justify-center animate-pulse">
-                    <Loader2 className="h-6 w-6 text-muted-foreground animate-spin" />
-                  </div>
-                ) : hasContent && !newFile ? (
-                  <div className="relative w-full h-48 bg-muted rounded-lg overflow-hidden group">
-                    {isVideo ? (
-                      currentUrl ? (
-                        <video
-                          src={currentUrl}
-                          controls
-                          className="w-full h-full object-contain"
-                          onError={(e) =>
-                            console.error("Video player error:", e)
-                          }
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-full flex-col text-center px-4">
-                          <div className="text-primary text-sm font-medium">
-                            Video Available
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            Preview could not be loaded. File might be missing
-                            or corrupted.
-                          </div>
-                        </div>
-                      )
-                    ) : (
-                      <Image
-                        src={currentUrl}
-                        alt={`Current ${mediaType.label}`}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        style={{ objectFit: "contain" }}
-                        className="transition-transform duration-300 group-hover:scale-[1.02]"
-                      />
-                    )}
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 z-10"
-                      onClick={async () => {
-                        // TODO: Implement deletion of this specific media file
-                        console.log(
-                          "Delete functionality for individual media to be implemented."
-                        );
-                        alert(
-                          `Delete for ${mediaType.label} to be implemented.`
-                        );
-                      }}
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  !newFile && (
-                    <div className="h-48 w-full bg-muted/30 rounded-lg flex flex-col items-center justify-center border border-dashed">
-                      <ImageOff className="h-8 w-8 text-muted-foreground/60 mb-1" />
-                      <p className="text-sm text-muted-foreground">
-                        No {mediaType.label} available
-                      </p>
+                {/* Media Content Section */}
+                <div className="space-y-3 px-4 pb-4">
+                  {/* Media Preview */}
+                  {isLoadingUrls && !newFile ? (
+                    <div className="bg-muted border-border/20 flex h-48 w-full animate-pulse items-center justify-center rounded-lg border">
+                      <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
                     </div>
-                  )
-                )}
+                  ) : hasContent && !newFile ? (
+                    <div className="bg-muted group/preview border-border/20 relative h-48 w-full overflow-hidden rounded-lg border">
+                      {isVideo ? (
+                        currentUrl ? (
+                          <video
+                            src={currentUrl}
+                            controls
+                            className="h-full w-full rounded-lg object-contain"
+                            onError={(e) =>
+                              console.error("Video player error:", e)
+                            }
+                          />
+                        ) : (
+                          <div className="flex h-full flex-col items-center justify-center px-4 text-center">
+                            <div className="text-primary text-sm font-medium">
+                              Video Available
+                            </div>
+                            <div className="text-muted-foreground mt-1 text-xs">
+                              Preview could not be loaded. File might be missing
+                              or corrupted.
+                            </div>
+                          </div>
+                        )
+                      ) : (
+                        <Image
+                          src={currentUrl}
+                          alt={`Current ${mediaType.label}`}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          style={{ objectFit: "contain" }}
+                          className="rounded-lg transition-transform duration-300 group-hover/preview:scale-[1.02]"
+                        />
+                      )}
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2 z-10 h-8 w-8 rounded-md opacity-0 shadow-lg transition-opacity group-hover/preview:opacity-100"
+                        onClick={async () => {
+                          // TODO: Implement deletion of this specific media file
+                          console.log(
+                            "Delete functionality for individual media to be implemented."
+                          );
+                          alert(
+                            `Delete for ${mediaType.label} to be implemented.`
+                          );
+                        }}
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    !newFile && (
+                      <div className="bg-muted/30 border-border/40 flex h-48 w-full flex-col items-center justify-center rounded-lg border-2 border-dashed">
+                        <ImageOff className="text-muted-foreground/60 mb-2 h-8 w-8" />
+                        <p className="text-muted-foreground text-sm font-medium">
+                          No {mediaType.label} available
+                        </p>
+                      </div>
+                    )
+                  )}
 
-                {/* File Upload */}
-                <FileUploadDropzone
-                  value={editableMediaFiles[mediaType.key] || null}
-                  onChange={(file) =>
-                    handleMediaFileChange(mediaType.key, file)
-                  }
-                  accept={mediaType.accept}
-                  label={
-                    hasContent
-                      ? `Replace ${mediaType.label}`
-                      : `Upload ${mediaType.label}`
-                  }
-                  description={
-                    hasContent
-                      ? `Current: ${game?.name}${mediaType.extension}`
-                      : mediaType.description
-                  }
-                />
+                  {/* File Upload */}
+                  <FileUploadDropzone
+                    value={editableMediaFiles[mediaType.key] || null}
+                    onChange={(file) =>
+                      handleMediaFileChange(mediaType.key, file)
+                    }
+                    accept={mediaType.accept}
+                    label={
+                      hasContent
+                        ? `Replace ${mediaType.label}`
+                        : `Upload ${mediaType.label}`
+                    }
+                    description={
+                      hasContent
+                        ? `Current: ${game?.name}${mediaType.extension}`
+                        : mediaType.description
+                    }
+                  />
+                </div>
               </div>
             );
           })}
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end pt-4">
+        <div className="sticky bottom-4 flex justify-end pt-4">
           <Button
             onClick={handleSaveChanges}
             disabled={isSaving || !hasChangesToSave}
             size="lg"
-            className="px-6"
+            className={`border px-6 py-3 shadow-xl transition-all duration-300 ${
+              isSaving || !hasChangesToSave
+                ? "bg-muted text-muted-foreground border-border cursor-not-allowed hover:shadow-xl"
+                : "bg-primary text-primary-foreground border-primary hover:bg-primary/90 hover:shadow-2xl"
+            }`}
           >
             {isSaving ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

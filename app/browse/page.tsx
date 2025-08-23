@@ -12,7 +12,7 @@ export const metadata = {
  */
 export default function BrowsePage() {
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="py-8">
       <GameBrowser />
     </div>
   );

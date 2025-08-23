@@ -43,8 +43,8 @@ function ConsoleImage({
   // Show Lucide game icon for "all" instead of fetching an image
   if (consoleValue === "all") {
     return (
-      <div className="flex items-center justify-center w-full h-full">
-        <Gamepad2 className={cn("size-10 text-primary", className)} />
+      <div className="flex h-full w-full items-center justify-center">
+        <Gamepad2 className={cn("text-primary size-10", className)} />
       </div>
     );
   }
@@ -162,10 +162,10 @@ export function ConsoleCarousel({
   return (
     <div className="space-y-3">
       <div className="relative">
-        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Search className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
         <Input
           placeholder="Search consoles..."
-          className="pl-10 h-10"
+          className="h-10 pl-10"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           aria-label="Search consoles"
@@ -175,11 +175,11 @@ export function ConsoleCarousel({
       <div className="relative">
         <ScrollArea
           ref={scrollAreaRef}
-          className="w-full whitespace-nowrap rounded-md pb-2"
+          className="w-full rounded-md pb-2 whitespace-nowrap"
           role="region"
           aria-label="Console selection carousel"
         >
-          <div className="flex w-max space-x-3 py-4 px-1" role="list">
+          <div className="flex w-max space-x-3 px-1 py-4" role="list">
             {filteredConsoles.map((console) => (
               <motion.button
                 key={console.value}
@@ -191,7 +191,7 @@ export function ConsoleCarousel({
                   }
                 }}
                 className={cn(
-                  "relative flex flex-col items-center justify-center p-2 h-36 w-28 md:w-32 lg:w-36 rounded-lg border-2 cursor-pointer transition-all shrink-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 overflow-hidden",
+                  "focus:ring-primary relative flex h-36 w-28 shrink-0 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border-2 p-2 transition-all focus:ring-2 focus:ring-offset-2 focus:outline-none md:w-32 lg:w-36",
                   selectedConsole === console.value
                     ? "border-primary bg-primary/5 shadow-md"
                     : "border-border hover:bg-accent hover:border-primary/30"
@@ -239,7 +239,7 @@ export function ConsoleCarousel({
                       duration: 0.3,
                     }}
                   >
-                    <div className="bg-orange-100 text-orange-600 text-[0.6rem] font-semibold px-1.5 py-0.5 rounded-md shadow-sm border border-orange-200 whitespace-nowrap">
+                    <div className="rounded-md border border-orange-200 bg-orange-100 px-1.5 py-0.5 text-[0.6rem] font-semibold whitespace-nowrap text-orange-600 shadow-sm">
                       Selected
                     </div>
                   </motion.div>
@@ -247,7 +247,7 @@ export function ConsoleCarousel({
 
                 <div
                   className={cn(
-                    "relative w-16 h-16 md:w-20 lg:w-24 flex-shrink-0 mb-2 transition-transform duration-200",
+                    "relative mb-2 h-16 w-16 flex-shrink-0 transition-transform duration-200 md:w-20 lg:w-24",
                     selectedConsole === console.value && "scale-110"
                   )}
                   aria-hidden="true"
@@ -260,7 +260,7 @@ export function ConsoleCarousel({
                     }
                   />
                 </div>
-                <span className="text-xs font-medium truncate w-full text-center">
+                <span className="w-full truncate text-center text-xs font-medium">
                   {console.label}
                 </span>
               </motion.button>
@@ -280,7 +280,7 @@ export function ConsoleCarousel({
 
       {filteredConsoles.length === 0 && (
         <div
-          className="text-center text-sm text-muted-foreground py-3 bg-muted/30 rounded-md"
+          className="text-muted-foreground bg-muted/30 rounded-md py-3 text-center text-sm"
           role="status"
           aria-live="polite"
         >

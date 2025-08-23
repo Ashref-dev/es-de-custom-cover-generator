@@ -1,12 +1,12 @@
 /**
  * File System Access API utilities
- * 
+ *
  * These utilities help access and process files from the user's file system
  * using the modern File System Access API
  */
 
-import { Game } from '@/types';
-import { CONSOLES, MEDIA_TYPES } from '@/lib/constants';
+import { Game } from "@/types";
+import { CONSOLES, MEDIA_TYPES } from "@/lib/constants";
 
 /**
  * Polyfill for window.showDirectoryPicker
@@ -26,29 +26,35 @@ declare global {
 export async function openMediaFolder(readWrite = false): Promise<any> {
   try {
     // Check if the API is available
-    if (!('showDirectoryPicker' in window)) {
-      throw new Error('File System Access API is not supported in this browser.');
+    if (!("showDirectoryPicker" in window)) {
+      throw new Error(
+        "File System Access API is not supported in this browser."
+      );
     }
 
     // Ask for permission to access the file system
     const options = {
-      id: 'esde-media-folder',
-      mode: readWrite ? 'readwrite' : 'read',
+      id: "esde-media-folder",
+      mode: readWrite ? "readwrite" : "read",
     } as any;
-    
+
     // Using 'any' type here to avoid TypeScript errors with the File System Access API
     const directoryHandle = await (window as any).showDirectoryPicker(options);
-    
+
     return directoryHandle;
   } catch (error: any) {
-    console.error('Error opening media folder:', error);
-    if (error.name === 'AbortError') {
-      throw new Error('Folder selection was cancelled.');
+    console.error("Error opening media folder:", error);
+    if (error.name === "AbortError") {
+      throw new Error("Folder selection was cancelled.");
     }
-    if (error.name === 'NotAllowedError') {
-       throw new Error('Permission denied. Read-write access is required for deletion.');
+    if (error.name === "NotAllowedError") {
+      throw new Error(
+        "Permission denied. Read-write access is required for deletion."
+      );
     }
-    throw new Error(`Failed to access the folder: ${error.message}. Please try again.`);
+    throw new Error(
+      `Failed to access the folder: ${error.message}. Please try again.`
+    );
   }
 }
 
@@ -59,29 +65,34 @@ export async function openMediaFolder(readWrite = false): Promise<any> {
  */
 export async function scanMediaFolder(dirHandle: any): Promise<Game[]> {
   const games: Game[] = [];
-  
+
   try {
     // Process each entry (console folder) in the main directory
     for await (const [name, handle] of dirHandle.entries()) {
       // Skip non-directory entries or entries that don't match console names
-      if (handle.kind !== 'directory' || !CONSOLES.some(c => c.value === name)) {
+      if (
+        handle.kind !== "directory" ||
+        !CONSOLES.some((c) => c.value === name)
+      ) {
         continue;
       }
-      
+
       const consoleFolder = name;
       const gameMap = new Map<string, Game>();
-      
+
       // Process media type folders within the console directory
       await processMediaFolders(handle, consoleFolder, gameMap);
-      
+
       // Add all found games for this console to the result
       games.push(...gameMap.values());
     }
-    
+
     return games.sort((a, b) => a.name.localeCompare(b.name));
   } catch (error: any) {
-    console.error('Error scanning media folder:', error);
-    throw new Error(`Error processing the ESDE media folder: ${error.message}. The folder structure may be incorrect.`);
+    console.error("Error scanning media folder:", error);
+    throw new Error(
+      `Error processing the ESDE media folder: ${error.message}. The folder structure may be incorrect.`
+    );
   }
 }
 
@@ -98,10 +109,10 @@ async function processMediaFolders(
 ): Promise<void> {
   // Process each entry (media type folder) in the console directory
   for await (const [mediaType, mediaHandle] of consoleHandle.entries()) {
-    if (mediaHandle.kind !== 'directory') {
+    if (mediaHandle.kind !== "directory") {
       continue;
     }
-    
+
     // Process files in this media type folder
     await processMediaFiles(mediaHandle, consoleName, mediaType, gameMap);
   }
@@ -122,18 +133,18 @@ async function processMediaFiles(
 ): Promise<void> {
   // Process each entry (file) in the media type directory
   for await (const [fileName, fileHandle] of mediaHandle.entries()) {
-    if (fileHandle.kind !== 'file') {
+    if (fileHandle.kind !== "file") {
       continue;
     }
-    
+
     // Extract game name from file name (remove extension)
     const gameName = fileName.replace(/\.[^/.]+$/, "");
-    
+
     // Skip if not a media file (e.g., hidden files)
     if (!gameName) {
       continue;
     }
-    
+
     // Get or create game entry
     let game = gameMap.get(gameName);
     if (!game) {
@@ -169,51 +180,51 @@ async function processMediaFiles(
       };
       gameMap.set(gameName, game);
     }
-    
+
     // Update media type flags, store corresponding file handles, and update mediaStatus
     switch (mediaType) {
-      case 'covers':
+      case "covers":
         game.hasCover = true;
         game.coverFileHandle = fileHandle;
         game.mediaStatus.covers = true;
         break;
-      case 'marquees':
+      case "marquees":
         game.hasLogo = true;
         game.logoFileHandle = fileHandle;
         game.mediaStatus.marquees = true;
         break;
-      case 'videos':
+      case "videos":
         game.hasVideo = true;
         game.mediaStatus.videos = true;
         // game.videoFileHandle = fileHandle; // If needed
         break;
-      case 'screenshots':
+      case "screenshots":
         game.screenshotFileHandle = fileHandle;
         game.mediaStatus.screenshots = true;
         break;
-      case '3dboxes':
+      case "3dboxes":
         game.box3dFileHandle = fileHandle;
         game.mediaStatus["3dboxes"] = true;
         break;
-      case 'backcovers':
+      case "backcovers":
         game.backCoverFileHandle = fileHandle;
         game.mediaStatus.backcovers = true;
         break;
-      case 'fanart':
+      case "fanart":
         game.fanartFileHandle = fileHandle;
         game.mediaStatus.fanart = true;
         break;
-      case 'physicalmedia':
+      case "physicalmedia":
         game.physicalMediaFileHandle = fileHandle;
         game.mediaStatus.physicalmedia = true;
         break;
-      case 'titlescreens':
+      case "titlescreens":
         game.titleScreenFileHandle = fileHandle;
         game.mediaStatus.titlescreens = true;
         break;
       // Add cases for other media types if necessary
     }
-    
+
     // Add media type folder name if not already present
     if (!game.mediaTypes.includes(mediaType)) {
       game.mediaTypes.push(mediaType);
@@ -229,7 +240,11 @@ async function processMediaFiles(
  * @param gameName The name of the game (without extension)
  * @returns Promise resolving when deletion is complete
  */
-export async function deleteGameMedia(dirHandle: any, consoleName: string, gameName: string): Promise<void> {
+export async function deleteGameMedia(
+  dirHandle: any,
+  consoleName: string,
+  gameName: string
+): Promise<void> {
   try {
     // Get the handle for the specific console directory
     const consoleHandle = await dirHandle.getDirectoryHandle(consoleName);
@@ -241,8 +256,10 @@ export async function deleteGameMedia(dirHandle: any, consoleName: string, gameN
     for (const mediaType of MEDIA_TYPES) {
       try {
         // Get the handle for the media type directory (e.g., 'covers', 'marquees')
-        const mediaDirHandle = await consoleHandle.getDirectoryHandle(mediaType.folder);
-        
+        const mediaDirHandle = await consoleHandle.getDirectoryHandle(
+          mediaType.folder
+        );
+
         // Iterate through files in the media directory to find matches
         for await (const [fileName] of mediaDirHandle.entries()) {
           // Check if the file name (without extension) matches the game name
@@ -251,40 +268,54 @@ export async function deleteGameMedia(dirHandle: any, consoleName: string, gameN
             try {
               // Attempt to remove the file
               await mediaDirHandle.removeEntry(fileName);
-              console.log(`Deleted: ${consoleName}/${mediaType.folder}/${fileName}`);
+              console.log(
+                `Deleted: ${consoleName}/${mediaType.folder}/${fileName}`
+              );
               filesDeleted++;
             } catch (removeError: any) {
               console.error(`Failed to delete file ${fileName}:`, removeError);
-              errors.push(`Failed to delete ${fileName}: ${removeError.message}`);
+              errors.push(
+                `Failed to delete ${fileName}: ${removeError.message}`
+              );
             }
           }
         }
       } catch (error: any) {
         // Ignore errors if a media type folder doesn't exist (e.g., Not found: NotFoundError)
-        if (error.name !== 'NotFoundError') {
-          console.warn(`Skipping folder ${consoleName}/${mediaType.folder}: ${error.message}`);
+        if (error.name !== "NotFoundError") {
+          console.warn(
+            `Skipping folder ${consoleName}/${mediaType.folder}: ${error.message}`
+          );
         }
       }
     }
 
     if (filesDeleted === 0 && errors.length === 0) {
-       console.warn(`No files found to delete for game "${gameName}" in console "${consoleName}".`);
-       // Optionally throw an error or return a status if needed
-       // throw new Error(`No files found to delete for game "${gameName}".`);
+      console.warn(
+        `No files found to delete for game "${gameName}" in console "${consoleName}".`
+      );
+      // Optionally throw an error or return a status if needed
+      // throw new Error(`No files found to delete for game "${gameName}".`);
     }
-    
+
     if (errors.length > 0) {
-      throw new Error(`Deletion partially failed. Errors: ${errors.join('; ')}`);
+      throw new Error(
+        `Deletion partially failed. Errors: ${errors.join("; ")}`
+      );
     }
 
-    console.log(`Successfully deleted ${filesDeleted} media file(s) for game "${gameName}".`);
-
+    console.log(
+      `Successfully deleted ${filesDeleted} media file(s) for game "${gameName}".`
+    );
   } catch (error: any) {
-    console.error(`Error deleting game media for "${gameName}" in console "${consoleName}":`, error);
+    console.error(
+      `Error deleting game media for "${gameName}" in console "${consoleName}":`,
+      error
+    );
     // Handle case where console directory itself might not be found
-    if (error.name === 'NotFoundError') {
-        throw new Error(`Console folder "${consoleName}" not found.`);
+    if (error.name === "NotFoundError") {
+      throw new Error(`Console folder "${consoleName}" not found.`);
     }
     throw new Error(`Failed to delete game media: ${error.message}`);
   }
-} 
+}

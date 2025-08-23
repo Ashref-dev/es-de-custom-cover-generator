@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import ReactConfetti from 'react-confetti';
+import { useEffect, useState } from "react";
+import ReactConfetti from "react-confetti";
 
 interface ConfettiProps {
   /**
    * Controls whether the confetti is active
    */
   active?: boolean;
-  
+
   /**
    * Duration of the confetti effect in milliseconds
    * @default 5000
    */
   duration?: number;
-  
+
   /**
    * Optional callback when confetti animation completes
    */
@@ -24,15 +24,15 @@ interface ConfettiProps {
 /**
  * Confetti celebration component to provide visual feedback for successful operations
  */
-export function Confetti({ 
-  active = false, 
-  duration = 5000, 
-  onComplete 
+export function Confetti({
+  active = false,
+  duration = 5000,
+  onComplete,
 }: ConfettiProps) {
   const [isActive, setIsActive] = useState(active);
-  const [dimensions, setDimensions] = useState({ 
-    width: 0, 
-    height: 0 
+  const [dimensions, setDimensions] = useState({
+    width: 0,
+    height: 0,
   });
 
   // Set the dimensions to the window size
@@ -40,7 +40,7 @@ export function Confetti({
     const handleResize = () => {
       setDimensions({
         width: window.innerWidth,
-        height: window.innerHeight
+        height: window.innerHeight,
       });
     };
 
@@ -48,26 +48,26 @@ export function Confetti({
     handleResize();
 
     // Set up event listener for window resize
-    window.addEventListener('resize', handleResize);
-    
+    window.addEventListener("resize", handleResize);
+
     // Clean up event listener
-    return () => window.removeEventListener('resize', handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Handle the active state
   useEffect(() => {
     if (active && !isActive) {
       setIsActive(true);
-      
+
       // Set timeout to disable confetti after duration
       const timer = setTimeout(() => {
         setIsActive(false);
         onComplete?.();
       }, duration);
-      
+
       return () => clearTimeout(timer);
     }
-    
+
     setIsActive(active);
   }, [active, duration, isActive, onComplete]);
 
@@ -81,20 +81,20 @@ export function Confetti({
       numberOfPieces={500}
       gravity={0.2}
       colors={[
-        '#ff80ed', // pink
-        '#65dc98', // green
-        '#0080ff', // blue
-        '#fd5c63', // red
-        '#ffba00'  // yellow
+        "#ff80ed", // pink
+        "#65dc98", // green
+        "#0080ff", // blue
+        "#fd5c63", // red
+        "#ffba00", // yellow
       ]}
       tweenDuration={5000}
       style={{
-        position: 'fixed',
+        position: "fixed",
         top: 0,
         left: 0,
         zIndex: 9999,
-        pointerEvents: 'none'
+        pointerEvents: "none",
       }}
     />
   );
-} 
+}
