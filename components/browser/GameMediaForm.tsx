@@ -3,15 +3,20 @@
 import { useState, useCallback } from "react";
 import { Game, MediaType as MediaTypeConfig } from "@/types";
 import { MEDIA_TYPES } from "@/lib/constants";
-import Image from "next/image";
+import { optimizeImage } from "@/lib/imageOptimizers";
 import {
-  ImageOff,
-  Loader2,
-  Save,
-  AlertCircle,
-  CheckCircle2,
-  Settings,
-} from "lucide-react";
+  saveMediaFile,
+  getOrCreateConsoleDirectory,
+} from "@/lib/mediaFileOperations";
+import {
+  updateGameWithMediaFile,
+  getOptimizationDimension,
+  supportsOptimization,
+  getDefaultOptimizationSettings,
+} from "@/lib/gameMediaHelpers";
+import { toast } from "sonner";
+import Image from "next/image";
+import { ImageOff, Loader2, Save, AlertCircle, Settings } from "lucide-react";
 import { TrashIcon } from "@radix-ui/react-icons";
 import FileUploadDropzone from "@/components/FileUploadDropzone";
 import { Button } from "@/components/ui/button";
@@ -23,7 +28,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { optimizeImage } from "@/lib/imageOptimizers";
 
 interface GameMediaFormProps {
   game: Game;
@@ -31,56 +35,6 @@ interface GameMediaFormProps {
   currentMediaUrls: Record<string, string>;
   isLoadingUrls: boolean;
   onGameUpdate: (updatedGame: Game) => void;
-}
-
-// Helper to map mediaType.key to Game file handle properties
-const mediaKeyToGameHandle: Record<string, keyof Game | undefined> = {
-  covers: "coverFileHandle",
-  marquees: "logoFileHandle",
-  screenshots: "screenshotFileHandle",
-  "3dboxes": "box3dFileHandle",
-  backcovers: "backCoverFileHandle",
-  fanart: "fanartFileHandle",
-  physicalmedia: "physicalMediaFileHandle",
-  titlescreens: "titleScreenFileHandle",
-};
-
-/**
- * Helper function to clean up old media files with different extensions
- * before saving a new file to avoid orphaned files.
- */
-async function cleanupOldMediaFiles(
-  mediaFolderHandle: any,
-  gameName: string,
-  targetFileName: string,
-  isVideo: boolean
-): Promise<void> {
-  // Define common extensions to check for cleanup
-  const extensionsToCheck = isVideo
-    ? [".mp4", ".mkv", ".avi", ".mov", ".webm", ".flv", ".wmv"]
-    : [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".tiff", ".svg"];
-
-  for (const extension of extensionsToCheck) {
-    const potentialFileName = gameName + extension;
-
-    // Skip if this is the file we're about to save
-    if (potentialFileName === targetFileName) {
-      continue;
-    }
-
-    try {
-      await mediaFolderHandle.removeEntry(potentialFileName);
-      console.log(`Cleaned up old media file: ${potentialFileName}`);
-    } catch (error: any) {
-      // NotFoundError is expected and fine - file doesn't exist
-      if (error.name !== "NotFoundError") {
-        console.warn(
-          `Failed to remove old file ${potentialFileName}:`,
-          error.message
-        );
-      }
-    }
-  }
 }
 
 export function GameMediaForm({
@@ -95,27 +49,16 @@ export function GameMediaForm({
   >({});
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
 
   // State for optimization toggles per media type
   const [optimizationEnabled, setOptimizationEnabled] = useState<
     Record<string, boolean>
-  >({
-    marquees: true, // Default enabled for marquees only
-    covers: false, // Default off for all other image types
-    screenshots: false,
-    "3dboxes": false,
-    backcovers: false,
-    fanart: false,
-    physicalmedia: false,
-    titlescreens: false,
-  });
+  >(getDefaultOptimizationSettings());
 
   const handleMediaFileChange = useCallback(
     (mediaKey: string, file: File | null) => {
       setEditableMediaFiles((prev) => ({ ...prev, [mediaKey]: file }));
       setSaveError(null);
-      setSaveSuccess(null);
     },
     []
   );
@@ -138,14 +81,13 @@ export function GameMediaForm({
 
     setIsSaving(true);
     setSaveError(null);
-    setSaveSuccess(null);
     let changesMade = 0;
-    const updatedGameData = { ...game }; // Shallow copy
+    let updatedGameData = { ...game }; // Shallow copy
 
     try {
-      const consoleDirHandle = await mainDirHandle.getDirectoryHandle(
-        game.console,
-        { create: true }
+      const consoleDirHandle = await getOrCreateConsoleDirectory(
+        mainDirHandle,
+        game.console
       );
 
       for (const mediaType of MEDIA_TYPES) {
@@ -153,111 +95,57 @@ export function GameMediaForm({
         if (newFile) {
           changesMade++;
 
-          // Optimize images before saving if enabled (skip videos)
+          // Optimize images before saving if enabled and supported
           if (
-            mediaType.key !== "videos" &&
+            supportsOptimization(mediaType.key) &&
             optimizationEnabled[mediaType.key]
           ) {
             try {
-              // Determine max dimension based on media type
-              const maxDimension = mediaType.key === "marquees" ? 600 : 1920;
-
+              const maxDimension = getOptimizationDimension(mediaType.key);
               const optimizedFile = await optimizeImage(newFile, maxDimension);
-
               newFile = optimizedFile; // Use the optimized file
             } catch (optimizationError) {
               console.error(
                 `${mediaType.label} optimization failed:`,
                 optimizationError
               );
-              setSaveError(
-                `Failed to optimize ${mediaType.label}: ${
-                  optimizationError instanceof Error
-                    ? optimizationError.message
-                    : String(optimizationError)
-                }. Original file will be saved.`
-              );
+              toast.warning("Image optimization failed", {
+                description: `${mediaType.label} will be saved without optimization`,
+                duration: 3000,
+              });
             }
           }
 
-          // Special handling for videos
-          if (mediaType.key === "videos") {
-            const mediaFolderHandle = await consoleDirHandle.getDirectoryHandle(
-              mediaType.folder,
-              { create: true }
-            );
-            const fileName = game.name + mediaType.extension;
-
-            // Clean up old video files with different extensions
-            await cleanupOldMediaFiles(
-              mediaFolderHandle,
-              game.name,
-              fileName,
-              true
-            );
-
-            const fileHandle = await mediaFolderHandle.getFileHandle(fileName, {
-              create: true,
-            });
-            const writable = await fileHandle.createWritable();
-            await writable.write(newFile);
-            await writable.close();
-
-            // Update hasVideo flag directly
-            updatedGameData.hasVideo = true;
-
-            // Add media type to the list if not present
-            if (!updatedGameData.mediaTypes.includes(mediaType.folder)) {
-              updatedGameData.mediaTypes.push(mediaType.folder);
-            }
-            continue;
-          }
-
-          // Handle other media types
-          const mediaFolderHandle = await consoleDirHandle.getDirectoryHandle(
-            mediaType.folder,
-            { create: true }
-          );
-          const fileName = game.name + mediaType.extension;
-
-          // Clean up old image files with different extensions
-          await cleanupOldMediaFiles(
-            mediaFolderHandle,
+          // Save the media file
+          const fileHandle = await saveMediaFile(
+            consoleDirHandle,
+            mediaType,
             game.name,
-            fileName,
-            false
+            newFile
           );
 
-          const fileHandle = await mediaFolderHandle.getFileHandle(fileName, {
-            create: true,
-          });
-          const writable = await fileHandle.createWritable();
-          await writable.write(newFile);
-          await writable.close();
-
-          // Update game object's handle and boolean flag
-          const gameHandleKey = mediaKeyToGameHandle[mediaType.key];
-          if (gameHandleKey) {
-            (updatedGameData as any)[gameHandleKey] = fileHandle;
-          }
-
-          // Update specific boolean flags
-          if (mediaType.key === "covers") updatedGameData.hasCover = true;
-          if (mediaType.key === "marquees") updatedGameData.hasLogo = true;
-
-          // Update mediaTypes array if this type wasn't there
-          if (!updatedGameData.mediaTypes.includes(mediaType.folder)) {
-            updatedGameData.mediaTypes.push(mediaType.folder);
-          }
+          // Update game object with new file information
+          updatedGameData = updateGameWithMediaFile(
+            updatedGameData,
+            mediaType.key,
+            fileHandle,
+            mediaType.folder
+          );
         }
       }
 
       if (changesMade > 0) {
         onGameUpdate(updatedGameData);
-        setSaveSuccess(`${changesMade} media file(s) updated successfully!`);
+        toast.success("Media files updated successfully!", {
+          description: `${changesMade} file${changesMade > 1 ? "s" : ""} updated for ${game.name}`,
+          duration: 4000,
+        });
         setEditableMediaFiles({}); // Clear staging files
       } else {
-        setSaveSuccess("No changes to save.");
+        toast.info("No changes to save", {
+          description: "Please select files to upload before saving",
+          duration: 3000,
+        });
       }
     } catch (err) {
       console.error("Error saving media files:", err);
@@ -286,16 +174,6 @@ export function GameMediaForm({
             <AlertDescription>{saveError}</AlertDescription>
           </Alert>
         )}
-        {saveSuccess && (
-          <Alert
-            variant="default"
-            className="animate-in fade-in-50 border-green-500 bg-green-50 text-green-700"
-          >
-            <CheckCircle2 className="h-4 w-4" />
-            <AlertTitle>Success</AlertTitle>
-            <AlertDescription>{saveSuccess}</AlertDescription>
-          </Alert>
-        )}
 
         {/* Media Grid */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
@@ -321,41 +199,46 @@ export function GameMediaForm({
                     </h3>
 
                     {/* Optimization Toggle for all image types except videos */}
-                    {mediaType.key !== "videos" && (
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={optimizationEnabled[mediaType.key] || false}
-                          onCheckedChange={(checked) =>
-                            handleOptimizationToggle(mediaType.key, checked)
-                          }
-                          id={`optimize-${mediaType.key}`}
-                          className="scale-75"
-                        />
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className="cursor-help">
-                              <Settings className="text-muted-foreground hover:text-foreground h-4 w-4 transition-colors" />
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="max-w-xs">
-                            {mediaType.key === "marquees" ? (
-                              <p className="text-sm">
-                                <strong>Image Optimization:</strong> PNG images
-                                will be resized (not compressed) to a maximum of
-                                600 pixels on the longest side to keep their
-                                size small while preserving transparency.
-                              </p>
-                            ) : (
-                              <p className="text-sm">
-                                <strong>Image Optimization:</strong> Images will
-                                be resized and compressed (75% quality) to a
-                                maximum of 1920 pixels on the longest side.
-                              </p>
-                            )}
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                    )}
+                    {mediaType.key !== "videos" &&
+                      supportsOptimization(mediaType.key) && (
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={
+                              optimizationEnabled[mediaType.key] || false
+                            }
+                            onCheckedChange={(checked) =>
+                              handleOptimizationToggle(mediaType.key, checked)
+                            }
+                            id={`optimize-${mediaType.key}`}
+                            className="scale-75"
+                          />
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="cursor-help">
+                                <Settings className="text-muted-foreground hover:text-foreground h-4 w-4 transition-colors" />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              {mediaType.key === "marquees" ? (
+                                <p className="text-sm">
+                                  <strong>Image Optimization:</strong> PNG
+                                  images will be resized (not compressed) to a
+                                  maximum of 600 pixels on the longest side to
+                                  keep their size small while preserving
+                                  transparency.
+                                </p>
+                              ) : (
+                                <p className="text-sm">
+                                  <strong>Image Optimization:</strong> Images
+                                  will be resized and compressed (75% quality)
+                                  to a maximum of 1920 pixels on the longest
+                                  side.
+                                </p>
+                              )}
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      )}
                   </div>
 
                   {hasContent && (

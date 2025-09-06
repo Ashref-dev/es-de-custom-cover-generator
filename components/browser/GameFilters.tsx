@@ -1,17 +1,9 @@
 "use client";
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { AlertTriangle, X, Filter } from "lucide-react";
+import { AlertTriangle, X } from "lucide-react";
 import { ConsoleOption } from "@/types";
 import { ConsoleCarousel } from "./ConsoleCarousel";
 import { MEDIA_FILTER_OPTIONS } from "@/lib/constants";
@@ -39,7 +31,6 @@ export function GameFilters({
   selectedConsole,
   onConsoleChange,
   selectedMediaFilter,
-  onMediaFilterChange,
   availableConsoles,
   onResetFilters,
   filteredCount,
@@ -84,28 +75,6 @@ export function GameFilters({
                 <X className="h-4 w-4" />
               </Button>
             )}
-          </div>
-
-          {/* Media Filter Dropdown */}
-          <div className="flex-shrink-0">
-            <Select
-              value={selectedMediaFilter}
-              onValueChange={onMediaFilterChange}
-            >
-              <SelectTrigger className="border-border/60 focus:border-primary/50 h-11 w-52">
-                <div className="flex items-center gap-2">
-                  <Filter className="text-muted-foreground h-4 w-4" />
-                  <SelectValue />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                {MEDIA_FILTER_OPTIONS.map((option) => (
-                  <SelectItem key={option.key} value={option.key}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           <Button

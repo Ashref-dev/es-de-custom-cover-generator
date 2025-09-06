@@ -145,12 +145,15 @@ async function processMediaFiles(
       continue;
     }
 
-    // Get or create game entry
-    let game = gameMap.get(gameName);
+    // Create a normalized key for case-insensitive lookup
+    const normalizedGameName = gameName.toLowerCase();
+
+    // Get or create game entry using normalized key
+    let game = gameMap.get(normalizedGameName);
     if (!game) {
       game = {
-        id: `${consoleName}_${gameName}`,
-        name: gameName,
+        id: `${consoleName}_${normalizedGameName}`,
+        name: gameName, // Use original casing for display
         console: consoleName,
         hasCover: false,
         hasLogo: false,
@@ -178,7 +181,7 @@ async function processMediaFiles(
         physicalMediaFileHandle: undefined,
         titleScreenFileHandle: undefined,
       };
-      gameMap.set(gameName, game);
+      gameMap.set(normalizedGameName, game);
     }
 
     // Update media type flags, store corresponding file handles, and update mediaStatus
@@ -262,9 +265,9 @@ export async function deleteGameMedia(
 
         // Iterate through files in the media directory to find matches
         for await (const [fileName] of mediaDirHandle.entries()) {
-          // Check if the file name (without extension) matches the game name
+          // Check if the file name (without extension) matches the game name (case-insensitive)
           const currentFileGameName = fileName.replace(/\.[^/.]+$/, "");
-          if (currentFileGameName === gameName) {
+          if (currentFileGameName.toLowerCase() === gameName.toLowerCase()) {
             try {
               // Attempt to remove the file
               await mediaDirHandle.removeEntry(fileName);

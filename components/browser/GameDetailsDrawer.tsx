@@ -12,9 +12,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Game } from "@/types";
 import { CONSOLES, MEDIA_TYPES } from "@/lib/constants";
+import { MEDIA_KEY_TO_GAME_HANDLE } from "@/lib/gameMediaHelpers";
+import { loadFileAsUrl } from "@/lib/mediaFileOperations";
 import { ArrowLeft } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { GameMediaForm } from "./GameMediaForm";
+import { GamePreview } from "./GamePreview";
 
 interface GameDetailsDrawerProps {
   game: Game | null;
@@ -22,29 +25,6 @@ interface GameDetailsDrawerProps {
   onClose: () => void;
   mainDirHandle: any; // Ideally FileSystemDirectoryHandle
   onGameUpdate: (updatedGame: Game) => void;
-}
-
-/**
- * Loads a file from a FileSystemFileHandle and returns an object URL
- */
-async function loadFileAsUrl(fileHandle: any): Promise<string> {
-  if (!fileHandle || typeof fileHandle.getFile !== "function") {
-    if (fileHandle instanceof File) {
-      return URL.createObjectURL(fileHandle);
-    }
-    console.warn(
-      "Invalid or missing file handle for loadFileAsUrl:",
-      fileHandle
-    );
-    return "";
-  }
-  try {
-    const file = await fileHandle.getFile();
-    return URL.createObjectURL(file);
-  } catch (error) {
-    console.error("Error loading file from handle:", error);
-    return "";
-  }
 }
 
 export function GameDetailsDrawer({
@@ -58,6 +38,7 @@ export function GameDetailsDrawer({
     Record<string, string>
   >({});
   const [isLoadingUrls, setIsLoadingUrls] = useState<boolean>(true);
+  const [isPreviewOpen, setIsPreviewOpen] = useState<boolean>(false);
 
   const consoleLabel = game
     ? CONSOLES.find((c) => c.value === game.console)?.label || game.console
@@ -97,18 +78,7 @@ export function GameDetailsDrawer({
           }
 
           // Helper to map mediaType.key to Game file handle properties
-          const mediaKeyToGameHandle: Record<string, keyof Game | undefined> = {
-            covers: "coverFileHandle",
-            marquees: "logoFileHandle",
-            screenshots: "screenshotFileHandle",
-            "3dboxes": "box3dFileHandle",
-            backcovers: "backCoverFileHandle",
-            fanart: "fanartFileHandle",
-            physicalmedia: "physicalMediaFileHandle",
-            titlescreens: "titleScreenFileHandle",
-          };
-
-          const handleName = mediaKeyToGameHandle[mediaType.key];
+          const handleName = MEDIA_KEY_TO_GAME_HANDLE[mediaType.key];
           if (handleName) {
             const fileHandle = game[handleName];
             if (fileHandle) {
@@ -132,19 +102,19 @@ export function GameDetailsDrawer({
       loadUrls();
     } else if (!isOpen) {
       // Clean up object URLs when drawer is closed
-      Object.values(currentMediaUrls).forEach((url) => {
-        if (url && url.startsWith("blob:")) URL.revokeObjectURL(url);
-      });
       setCurrentMediaUrls({});
     }
+  }, [game, isOpen, mainDirHandle]);
 
+  // Separate cleanup effect
+  useEffect(() => {
     return () => {
       // Cleanup on unmount
       Object.values(currentMediaUrls).forEach((url) => {
         if (url && url.startsWith("blob:")) URL.revokeObjectURL(url);
       });
     };
-  }, [game, isOpen, mainDirHandle]);
+  }, [currentMediaUrls]);
 
   if (!game) {
     return null;
@@ -178,12 +148,24 @@ export function GameDetailsDrawer({
                 {consoleLabel} — Media Management
               </SheetDescription>
             </div>
-            <SheetClose asChild>
-              <Button className="ml-4 flex-shrink-0 gap-2 transition-colors">
-                <ArrowLeft className="h-4 w-4" />
-                Go back
-              </Button>
-            </SheetClose>
+            <div className="ml-4 flex flex-shrink-0 gap-2">
+              {/* Game preview button is WIP  */}
+              {/* <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 transition-colors"
+                onClick={() => setIsPreviewOpen(true)}
+              >
+                <Eye className="h-4 w-4" />
+                Preview Game
+              </Button> */}
+              <SheetClose asChild>
+                <Button size="sm" className="gap-2 transition-colors">
+                  <ArrowLeft className="h-4 w-4" />
+                  Go back
+                </Button>
+              </SheetClose>
+            </div>
           </div>
         </SheetHeader>
 
@@ -200,6 +182,13 @@ export function GameDetailsDrawer({
             </div>
           </ScrollArea>
         </div>
+
+        {/* Game Preview Dialog */}
+        <GamePreview
+          game={game}
+          isOpen={isPreviewOpen}
+          onClose={() => setIsPreviewOpen(false)}
+        />
       </SheetContent>
     </Sheet>
   );

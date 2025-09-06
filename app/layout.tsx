@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navigation } from "@/components/Navigation";
+import { Toaster } from "@/components/ui/sonner";
 import { GamepadIcon } from "lucide-react";
 
 const geistSans = Geist({
@@ -68,6 +69,13 @@ export default function RootLayout({
               </p>
             </div>
           </footer>
+          <Toaster 
+            position="bottom-center"
+            expand={true}
+            richColors
+            closeButton
+            duration={4000}
+          />
         </ThemeProvider>
       </body>
     </html>
