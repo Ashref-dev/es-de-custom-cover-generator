@@ -7,6 +7,7 @@
 
 import { Game } from "@/types";
 import { CONSOLES, MEDIA_TYPES } from "@/lib/constants";
+import { normalizeGameKey } from "@/lib/gameMediaHelpers";
 
 /**
  * Polyfill for window.showDirectoryPicker
@@ -145,15 +146,15 @@ async function processMediaFiles(
       continue;
     }
 
-    // Create a normalized key for case-insensitive lookup
-    const normalizedGameName = gameName.toLowerCase();
+    // Create a normalized key for case/whitespace-insensitive lookup
+    const normalizedGameName = normalizeGameKey(gameName);
 
     // Get or create game entry using normalized key
     let game = gameMap.get(normalizedGameName);
     if (!game) {
       game = {
         id: `${consoleName}_${normalizedGameName}`,
-        name: gameName, // Use original casing for display
+        name: gameName, // Keep original as display (may include punctuation like .hack)
         console: consoleName,
         hasCover: false,
         hasLogo: false,
@@ -265,9 +266,11 @@ export async function deleteGameMedia(
 
         // Iterate through files in the media directory to find matches
         for await (const [fileName] of mediaDirHandle.entries()) {
-          // Check if the file name (without extension) matches the game name (case-insensitive)
+          // Check if the file name (without extension) matches the game name using normalized key
           const currentFileGameName = fileName.replace(/\.[^/.]+$/, "");
-          if (currentFileGameName.toLowerCase() === gameName.toLowerCase()) {
+          if (
+            normalizeGameKey(currentFileGameName) === normalizeGameKey(gameName)
+          ) {
             try {
               // Attempt to remove the file
               await mediaDirHandle.removeEntry(fileName);

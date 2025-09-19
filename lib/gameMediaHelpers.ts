@@ -167,3 +167,35 @@ export function generateMediaFileName(
 ): string {
   return gameName + extension;
 }
+
+/**
+ * Normalizes a game basename to a canonical key for grouping/lookup.
+ * - Unicode normalize (NFKC)
+ * - Convert all unicode whitespace (incl. NBSP) to regular spaces
+ * - Collapse multiple spaces to a single space
+ * - Trim leading/trailing spaces
+ * - Lowercase
+ * Does NOT remove punctuation (.,-_/& etc.) to avoid breaking titles like .hack
+ */
+export function normalizeGameKey(name: string): string {
+  return (
+    name
+      .normalize("NFKC")
+      // Replace any unicode whitespace class (incl NBSP, en/em spaces, etc.) with plain space
+      .replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\s]+/g, " ")
+      .trim()
+      .toLowerCase()
+  );
+}
+
+/**
+ * Sanitizes a basename for saving to disk while preserving case.
+ * Applies the same unicode and spacing normalization as normalizeGameKey,
+ * but does NOT lowercase so filenames can retain user-preferred casing.
+ */
+export function sanitizeBasenameForSave(name: string): string {
+  return name
+    .normalize("NFKC")
+    .replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\s]+/g, " ")
+    .trim();
+}

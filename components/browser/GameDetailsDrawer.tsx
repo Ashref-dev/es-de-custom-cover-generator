@@ -12,9 +12,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Game } from "@/types";
 import { CONSOLES, MEDIA_TYPES } from "@/lib/constants";
+import { sanitizeBasenameForSave } from "@/lib/gameMediaHelpers";
 import { MEDIA_KEY_TO_GAME_HANDLE } from "@/lib/gameMediaHelpers";
 import { loadFileAsUrl } from "@/lib/mediaFileOperations";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { GameMediaForm } from "./GameMediaForm";
 import { GamePreview } from "./GamePreview";
@@ -60,10 +61,20 @@ export function GameDetailsDrawer({
                 );
                 const videosDirHandle =
                   await consoleDirHandle.getDirectoryHandle(mediaType.folder);
-                const videoFileHandle = await videosDirHandle.getFileHandle(
-                  game.name + mediaType.extension
-                );
-                urls[mediaType.key] = await loadFileAsUrl(videoFileHandle);
+                let loaded = false;
+                const candidates = [
+                  game.name + mediaType.extension,
+                  sanitizeBasenameForSave(game.name) + mediaType.extension,
+                ];
+                for (const candidate of candidates) {
+                  try {
+                    const fh = await videosDirHandle.getFileHandle(candidate);
+                    urls[mediaType.key] = await loadFileAsUrl(fh);
+                    loaded = true;
+                    break;
+                  } catch {}
+                }
+                if (!loaded) urls[mediaType.key] = "";
               } catch (error) {
                 console.error(
                   `Error loading URL for video '${game.name}${mediaType.extension}':`,
@@ -150,7 +161,7 @@ export function GameDetailsDrawer({
             </div>
             <div className="ml-4 flex flex-shrink-0 gap-2">
               {/* Game preview button is WIP  */}
-              {/* <Button
+              <Button
                 variant="outline"
                 size="sm"
                 className="gap-2 transition-colors"
@@ -158,7 +169,7 @@ export function GameDetailsDrawer({
               >
                 <Eye className="h-4 w-4" />
                 Preview Game
-              </Button> */}
+              </Button>
               <SheetClose asChild>
                 <Button size="sm" className="gap-2 transition-colors">
                   <ArrowLeft className="h-4 w-4" />

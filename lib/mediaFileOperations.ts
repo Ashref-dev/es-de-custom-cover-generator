@@ -6,6 +6,7 @@
  */
 
 import { MEDIA_TYPES } from "@/lib/constants";
+import { sanitizeBasenameForSave } from "@/lib/gameMediaHelpers";
 
 /**
  * Helper function to clean up old media files with different extensions
@@ -84,7 +85,8 @@ export async function saveMediaFile(
     { create: true }
   );
 
-  const fileName = gameName + mediaType.extension;
+  const safeBase = sanitizeBasenameForSave(gameName);
+  const fileName = safeBase + mediaType.extension;
 
   // Clean up old files with different extensions
   await cleanupOldMediaFiles(
