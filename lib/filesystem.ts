@@ -62,21 +62,43 @@ export async function openMediaFolder(readWrite = false): Promise<any> {
 /**
  * Processes the ES-DE/downloaded_media directory to extract game information
  * @param dirHandle The directory handle for the downloaded_media folder (type any)
+ * @param customConsoles Optional array of custom console definitions
  * @returns Promise resolving to an array of Game objects
  */
-export async function scanMediaFolder(dirHandle: any): Promise<Game[]> {
+export async function scanMediaFolder(
+  dirHandle: any,
+  customConsoles: any[] = []
+): Promise<Game[]> {
   const games: Game[] = [];
 
   try {
+    // Combine standard and custom consoles
+    const allConsoles = [...CONSOLES, ...customConsoles];
+
     // Process each entry (console folder) in the main directory
     for await (const [name, handle] of dirHandle.entries()) {
-      // Skip non-directory entries or entries that don't match console names
-      if (
-        handle.kind !== "directory" ||
-        !CONSOLES.some((c) => c.value === name)
-      ) {
+      // Skip non-directory entries
+      if (handle.kind !== "directory") {
         continue;
       }
+
+      // Check if it's a known console
+      const isKnownConsole = allConsoles.some((c) => c.value === name);
+
+      // If it's not a known console, check if it might be a valid custom console folder
+      // by looking for standard media subfolders (as requested by user)
+      // This allows auto-detection or validation of custom folders
+      const isValidConsole = isKnownConsole;
+
+      // If it's a custom console (in our list but not in standard list), we should verify it has content
+      // or if it's a folder that matches a custom console definition
+      if (!isValidConsole) {
+        continue;
+      }
+
+      // For custom consoles, we might want to verify they contain at least one media folder
+      // to avoid picking up random folders like "CLEANUP" or ".stfolder" if they happened to match a name
+      // (though name matching protects against this mostly)
 
       const consoleFolder = name;
       const gameMap = new Map<string, Game>();

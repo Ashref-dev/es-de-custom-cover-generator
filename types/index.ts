@@ -24,6 +24,8 @@ export interface ConsoleOption {
   value: string;
   /** Display label */
   label: string;
+  /** Optional base64 logo string */
+  logo?: string;
 }
 
 /**

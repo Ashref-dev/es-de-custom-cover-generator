@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CONSOLES } from "@/lib/constants";
 import {
@@ -20,6 +20,7 @@ import {
   Palette,
   Disc,
   Play,
+  Gamepad2,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import GameCard from "./GameCard";
@@ -58,6 +59,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { useCustomSystems } from "@/hooks/useCustomSystems";
+import { CustomSystemManager } from "@/components/CustomSystemManager";
 
 // Define a type for the directory handle, even if it's basic
 // This avoids using 'any' directly in the state
@@ -99,17 +102,41 @@ export default function GameBrowser() {
   // State for help dialog
   const [showHelpDialog, setShowHelpDialog] = useState(false);
 
+  // Custom Systems Hook
+  const { customSystems, addSystem, removeSystem } = useCustomSystems();
+  const [isCustomSystemManagerOpen, setIsCustomSystemManagerOpen] =
+    useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  // Check for tooltip visibility on mount
+  useEffect(() => {
+    const hasSeenTooltip = localStorage.getItem(
+      "esde-custom-systems-tooltip-seen"
+    );
+    if (!hasSeenTooltip) {
+      // Small delay to show after initial render
+      const timer = setTimeout(() => setShowTooltip(true), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const dismissTooltip = () => {
+    setShowTooltip(false);
+    localStorage.setItem("esde-custom-systems-tooltip-seen", "true");
+  };
+
   // Get available consoles (only those that have games)
   const availableConsoles = useMemo(() => {
     // Get unique console types from games array
     const consoleValues = [...new Set(games.map((game) => game.console))];
 
-    // Map these to console objects with labels from the constants
+    // Map these to console objects with labels from the constants or custom systems
+    const allConsoles = [...CONSOLES, ...customSystems];
     return consoleValues
-      .map((value) => CONSOLES.find((c) => c.value === value))
+      .map((value) => allConsoles.find((c) => c.value === value))
       .filter((c): c is ConsoleOption => c !== undefined)
       .sort((a, b) => a.label.localeCompare(b.label));
-  }, [games]);
+  }, [games, customSystems]);
 
   // Quick filter configuration with dynamic counts
   const availableQuickFilters = useMemo<QuickFilter[]>(() => {
@@ -349,9 +376,11 @@ export default function GameBrowser() {
           break;
         case "console":
           const consoleA =
-            CONSOLES.find((c) => c.value === a.console)?.label || a.console;
+            [...CONSOLES, ...customSystems].find((c) => c.value === a.console)
+              ?.label || a.console;
           const consoleB =
-            CONSOLES.find((c) => c.value === b.console)?.label || b.console;
+            [...CONSOLES, ...customSystems].find((c) => c.value === b.console)
+              ?.label || b.console;
           comparison = consoleA.localeCompare(consoleB);
           break;
 
@@ -372,6 +401,7 @@ export default function GameBrowser() {
     quickFilters,
     sortBy,
     sortDirection,
+    customSystems,
   ]);
 
   // Scan the downloaded_media folder
@@ -394,7 +424,7 @@ export default function GameBrowser() {
       setMainDirHandle(dirHandle);
 
       // Process the directory to find games
-      const foundGames = await scanMediaFolder(dirHandle);
+      const foundGames = await scanMediaFolder(dirHandle, customSystems);
       setGames(foundGames);
 
       if (foundGames.length === 0) {
@@ -412,6 +442,25 @@ export default function GameBrowser() {
       setLoading(false);
     }
   };
+
+  // Auto-refresh library when custom systems change
+  useEffect(() => {
+    const refreshLibrary = async () => {
+      if (!mainDirHandle) return;
+
+      setLoading(true);
+      try {
+        const foundGames = await scanMediaFolder(mainDirHandle, customSystems);
+        setGames(foundGames);
+      } catch (err) {
+        console.error("Error refreshing library:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    refreshLibrary();
+  }, [customSystems, mainDirHandle]);
 
   // Filter games based on selected console, search query, and media filter
   const filteredGames = games.filter((game) => {
@@ -583,19 +632,57 @@ export default function GameBrowser() {
           </p>
         </div>
 
-        <Button
-          onClick={() => setShowHelpDialog(true)}
-          disabled={loading}
-          className="group min-w-40"
-          size="lg"
-        >
-          {loading ? (
-            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <FolderOpen className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
+        <div className="relative flex gap-2">
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={() => {
+              setIsCustomSystemManagerOpen(true);
+              if (showTooltip) dismissTooltip();
+            }}
+            className="hidden md:flex"
+          >
+            <Gamepad2 className="mr-2 h-4 w-4" />
+            Custom Systems
+          </Button>
+
+          {showTooltip && (
+            <div className="bg-popover text-popover-foreground animate-in fade-in zoom-in-95 slide-in-from-top-2 absolute top-full left-0 z-50 mt-3 w-72 rounded-lg border shadow-lg">
+              <div className="relative p-4">
+                <div className="mb-2 flex items-start justify-between">
+                  <h4 className="font-semibold">Custom Systems Support</h4>
+                  <button
+                    onClick={dismissTooltip}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Dismiss</span>
+                  </button>
+                </div>
+                <p className="text-muted-foreground text-sm">
+                  You can now add your own custom consoles! Perfect for ROM
+                  hacks, fan games, or systems not in the default list. Just
+                  click here to get started.
+                </p>
+                {/* Arrow */}
+                <div className="bg-popover border-t-border border-l-border absolute -top-2 left-6 h-4 w-4 rotate-45 border-t border-l" />
+              </div>
+            </div>
           )}
-          {loading ? "Scanning..." : "Scan Media Folder"}
-        </Button>
+          <Button
+            onClick={() => setShowHelpDialog(true)}
+            disabled={loading}
+            className="group min-w-40"
+            size="lg"
+          >
+            {loading ? (
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <FolderOpen className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
+            )}
+            {loading ? "Scanning..." : "Scan Media Folder"}
+          </Button>
+        </div>
       </div>
 
       {error && (
@@ -724,8 +811,12 @@ export default function GameBrowser() {
             <AlertDialogDescription>
               Are you sure you want to delete all media files for the game
               &quot;{gameToDelete?.name}&quot; on{" "}
-              {CONSOLES.find((c) => c.value === gameToDelete?.console)?.label}?
-              This action cannot be undone.
+              {
+                [...CONSOLES, ...customSystems].find(
+                  (c) => c.value === gameToDelete?.console
+                )?.label
+              }
+              ? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -798,15 +889,23 @@ export default function GameBrowser() {
             </Button>
             <Button
               type="submit"
-              onClick={() => handleScanMediaFolder(!!mainDirHandle)}
+              onClick={() => handleScanMediaFolder(false)}
               className="gap-2"
             >
               <FolderOpen className="h-4 w-4" />
-              Browse for Folder
+              Select Folder & Scan
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CustomSystemManager
+        isOpen={isCustomSystemManagerOpen}
+        onClose={() => setIsCustomSystemManagerOpen(false)}
+        customSystems={customSystems}
+        onAddSystem={addSystem}
+        onRemoveSystem={removeSystem}
+      />
     </div>
   );
 }

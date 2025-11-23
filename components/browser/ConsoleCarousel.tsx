@@ -20,13 +20,28 @@ function ConsoleImage({
   consoleValue,
   consoleLabel,
   className,
+  customLogo,
 }: {
   consoleValue: string;
   consoleLabel: string;
   className?: string;
+  customLogo?: string;
 }) {
-  const [imgSrc, setImgSrc] = useState(`/logos/${consoleValue}.png`);
+  const [imgSrc, setImgSrc] = useState(
+    customLogo || `/logos/${consoleValue}.png`
+  );
   const [imgError, setImgError] = useState(false);
+
+  // Update imgSrc if customLogo changes (e.g. after adding a new system)
+  useEffect(() => {
+    if (customLogo) {
+      setImgSrc(customLogo);
+      setImgError(false);
+    } else {
+      setImgSrc(`/logos/${consoleValue}.png`);
+      setImgError(false);
+    }
+  }, [customLogo, consoleValue]);
 
   // When image fails to load, try SVG instead
   const handleError = () => {
@@ -255,6 +270,7 @@ export function ConsoleCarousel({
                   <ConsoleImage
                     consoleValue={console.value}
                     consoleLabel={console.label}
+                    customLogo={console.logo}
                     className={
                       selectedConsole === console.value ? "priority" : ""
                     }

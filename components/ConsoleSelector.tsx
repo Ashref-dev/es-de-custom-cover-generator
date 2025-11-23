@@ -26,7 +26,13 @@ export default function ConsoleSelector({
   value,
   onChange,
   disabled = false,
-}: ConsoleSelectorProps) {
+  customConsoles = [],
+}: ConsoleSelectorProps & { customConsoles?: any[] }) {
+  // Combine standard and custom consoles, sorting by label
+  const allConsoles = [...CONSOLES, ...customConsoles].sort((a, b) =>
+    a.label.localeCompare(b.label)
+  );
+
   return (
     <Card className="w-full">
       <CardHeader className="pb-2">
@@ -43,7 +49,7 @@ export default function ConsoleSelector({
           <SelectContent>
             <SelectGroup>
               <SelectLabel>Consoles</SelectLabel>
-              {CONSOLES.map((console) => (
+              {allConsoles.map((console) => (
                 <SelectItem key={console.value} value={console.value}>
                   {console.label}
                 </SelectItem>

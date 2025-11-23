@@ -35,6 +35,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useCustomSystems } from "@/hooks/useCustomSystems";
 
 /**
  * Client component that handles all the interactive functionality
@@ -42,6 +43,9 @@ import {
  * folder structure directly in the user's ES-DE downloaded_media folder.
  */
 export default function MediaGenerator() {
+  // Custom Systems Hook
+  const { customSystems } = useCustomSystems();
+
   // State for ROM name
   const [romName, setRomName] = useState<string>("");
 
@@ -234,7 +238,8 @@ export default function MediaGenerator() {
       }
 
       const consoleLabel =
-        CONSOLES.find((c) => c.value === consoleName)?.label || consoleName;
+        [...CONSOLES, ...customSystems].find((c) => c.value === consoleName)
+          ?.label || consoleName;
 
       setSuccess(
         `Successfully created ${processedFiles.length} media file${
@@ -372,7 +377,6 @@ export default function MediaGenerator() {
             </p>
           </div>
 
-          {/* Console Selector */}
           <ConsoleSelector
             value={consoleName}
             onChange={(value: string) => {
@@ -381,6 +385,7 @@ export default function MediaGenerator() {
               setSuccess(null);
             }}
             disabled={isPending}
+            customConsoles={customSystems}
           />
         </div>
 
